@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -114,17 +115,19 @@ export default function AdminSettings() {
         .from('system_settings')
         .select('id')
         .eq('key', 'business_info')
-        .single();
+        .maybeSingle();
+
+      const jsonValue = JSON.parse(JSON.stringify(businessSettings)) as Json;
 
       if (existing) {
         await supabase
           .from('system_settings')
-          .update({ value: businessSettings, updated_at: new Date().toISOString() })
+          .update({ value: jsonValue, updated_at: new Date().toISOString() })
           .eq('key', 'business_info');
       } else {
         await supabase
           .from('system_settings')
-          .insert({ key: 'business_info', value: businessSettings });
+          .insert([{ key: 'business_info', value: jsonValue }]);
       }
 
       toast({ title: 'Success', description: 'Business settings saved' });
@@ -143,17 +146,19 @@ export default function AdminSettings() {
         .from('system_settings')
         .select('id')
         .eq('key', 'notifications')
-        .single();
+        .maybeSingle();
+
+      const jsonValue = JSON.parse(JSON.stringify(notifications)) as Json;
 
       if (existing) {
         await supabase
           .from('system_settings')
-          .update({ value: notifications, updated_at: new Date().toISOString() })
+          .update({ value: jsonValue, updated_at: new Date().toISOString() })
           .eq('key', 'notifications');
       } else {
         await supabase
           .from('system_settings')
-          .insert({ key: 'notifications', value: notifications });
+          .insert([{ key: 'notifications', value: jsonValue }]);
       }
 
       toast({ title: 'Success', description: 'Notification settings saved' });
