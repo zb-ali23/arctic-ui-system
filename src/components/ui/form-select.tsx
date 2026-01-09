@@ -1,91 +1,106 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Check, AlertCircle } from "lucide-react"
+import { ChevronDown, Check, AlertCircle, LucideIcon } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
-export interface FormTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+export interface FormSelectOption {
+  value: string
+  label: string
+  disabled?: boolean
+}
+
+export interface FormSelectProps
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
   label?: string
   error?: string
   success?: boolean
+  icon?: LucideIcon
   helperText?: string
-  showCharCount?: boolean
+  options: FormSelectOption[]
+  placeholder?: string
   required?: boolean
+  onChange?: (value: string) => void
 }
 
-const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
+const FormSelect = React.forwardRef<HTMLSelectElement, FormSelectProps>(
   ({ 
     className, 
     label, 
     error, 
     success, 
+    icon: Icon,
     helperText, 
     id, 
-    showCharCount,
-    maxLength,
+    options,
+    placeholder = "Select an option",
     required,
     value,
+    onChange,
     onFocus,
     onBlur,
     ...props 
   }, ref) => {
-    const textareaId = id || React.useId()
+    const selectId = id || React.useId()
     const [isFocused, setIsFocused] = React.useState(false)
     const [hasBeenTouched, setHasBeenTouched] = React.useState(false)
     
-    const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    const handleFocus = (e: React.FocusEvent<HTMLSelectElement>) => {
       setIsFocused(true)
       onFocus?.(e)
     }
     
-    const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    const handleBlur = (e: React.FocusEvent<HTMLSelectElement>) => {
       setIsFocused(false)
       setHasBeenTouched(true)
       onBlur?.(e)
     }
     
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onChange?.(e.target.value)
+    }
+    
     const showError = error && hasBeenTouched
-    const showSuccess = success && hasBeenTouched && !error
-    const charCount = typeof value === 'string' ? value.length : 0
+    const showSuccess = success && hasBeenTouched && !error && value
     
     return (
       <div className="space-y-2">
         {label && (
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor={textareaId}
-              className={cn(
-                "text-sm font-medium transition-colors duration-200",
-                isFocused ? "text-frost" : "text-foreground",
-                showError && "text-destructive"
-              )}
-            >
-              {label}
-              {required && <span className="text-destructive ml-1">*</span>}
-            </label>
-            {showCharCount && maxLength && (
-              <span className={cn(
-                "text-xs transition-colors",
-                charCount > maxLength * 0.9 
-                  ? "text-destructive" 
-                  : "text-muted-foreground"
-              )}>
-                {charCount}/{maxLength}
-              </span>
+          <label
+            htmlFor={selectId}
+            className={cn(
+              "text-sm font-medium transition-colors duration-200",
+              isFocused ? "text-frost" : "text-foreground",
+              showError && "text-destructive"
             )}
-          </div>
+          >
+            {label}
+            {required && <span className="text-destructive ml-1">*</span>}
+          </label>
         )}
         <div className="relative group">
-          <textarea
-            id={textareaId}
+          {Icon && (
+            <motion.div 
+              className={cn(
+                "absolute left-3 top-1/2 -translate-y-1/2 transition-colors duration-200 pointer-events-none z-10",
+                isFocused ? "text-frost" : "text-muted-foreground",
+                showError && "text-destructive"
+              )}
+              animate={{ scale: isFocused ? 1.1 : 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Icon className="h-4 w-4" />
+            </motion.div>
+          )}
+          <select
+            id={selectId}
             value={value}
-            maxLength={maxLength}
             className={cn(
-              "flex min-h-[120px] w-full rounded-xl border-2 bg-background px-4 py-3 text-sm transition-all duration-200 resize-none",
-              "placeholder:text-muted-foreground/60",
+              "flex h-12 w-full rounded-xl border-2 bg-background px-4 py-2 pr-10 text-sm transition-all duration-200 appearance-none cursor-pointer",
               "focus-visible:outline-none focus-visible:ring-0",
               "disabled:cursor-not-allowed disabled:opacity-50",
               "hover:border-muted-foreground/50",
+              Icon && "pl-10",
+              !value && "text-muted-foreground/60",
               showError
                 ? "border-destructive bg-destructive/5 focus-visible:border-destructive"
                 : showSuccess
@@ -98,10 +113,32 @@ const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
             ref={ref}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            onChange={handleChange}
             aria-invalid={!!showError}
-            aria-describedby={showError ? `${textareaId}-error` : helperText ? `${textareaId}-helper` : undefined}
+            aria-describedby={showError ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined}
             {...props}
-          />
+          >
+            <option value="" disabled>
+              {placeholder}
+            </option>
+            {options.map((option) => (
+              <option 
+                key={option.value} 
+                value={option.value}
+                disabled={option.disabled}
+              >
+                {option.label}
+              </option>
+            ))}
+          </select>
+          
+          {/* Chevron Icon */}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <ChevronDown className={cn(
+              "h-4 w-4 transition-transform duration-200",
+              isFocused ? "text-frost rotate-180" : "text-muted-foreground"
+            )} />
+          </div>
           
           {/* Status Icons */}
           <AnimatePresence mode="wait">
@@ -110,7 +147,7 @@ const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.5 }}
-                className="absolute right-3 top-3"
+                className="absolute right-10 top-1/2 -translate-y-1/2"
               >
                 <div className="w-5 h-5 rounded-full bg-destructive/10 flex items-center justify-center">
                   <AlertCircle className="h-3.5 w-3.5 text-destructive" />
@@ -122,7 +159,7 @@ const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.5 }}
-                className="absolute right-3 top-3"
+                className="absolute right-10 top-1/2 -translate-y-1/2"
               >
                 <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
                   <Check className="h-3 w-3 text-white" />
@@ -140,7 +177,7 @@ const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
               initial={{ opacity: 0, y: -5, height: 0 }}
               animate={{ opacity: 1, y: 0, height: "auto" }}
               exit={{ opacity: 0, y: -5, height: 0 }}
-              id={`${textareaId}-error`}
+              id={`${selectId}-error`}
               className="text-xs text-destructive flex items-center gap-1.5"
             >
               {error}
@@ -150,7 +187,7 @@ const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
               key="helper"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              id={`${textareaId}-helper`}
+              id={`${selectId}-helper`}
               className="text-xs text-muted-foreground"
             >
               {helperText}
@@ -161,6 +198,6 @@ const FormTextarea = React.forwardRef<HTMLTextAreaElement, FormTextareaProps>(
     )
   }
 )
-FormTextarea.displayName = "FormTextarea"
+FormSelect.displayName = "FormSelect"
 
-export { FormTextarea }
+export { FormSelect }
