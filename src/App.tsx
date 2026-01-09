@@ -48,6 +48,15 @@ const CustomerPortalInvoices = lazy(() => import("./pages/portal/CustomerPortalI
 const CustomerPortalReviews = lazy(() => import("./pages/portal/CustomerPortalReviews"));
 const CustomerPortalAccount = lazy(() => import("./pages/portal/CustomerPortalAccount"));
 
+// Technician Portal pages
+const TechnicianAuth = lazy(() => import("./pages/technician/TechnicianAuth"));
+const TechnicianLayout = lazy(() => import("./components/technician/TechnicianLayout"));
+const TechnicianDashboard = lazy(() => import("./pages/technician/TechnicianDashboard"));
+const TechnicianJobs = lazy(() => import("./pages/technician/TechnicianJobs"));
+const TechnicianJobDetail = lazy(() => import("./pages/technician/TechnicianJobDetail"));
+const TechnicianEarnings = lazy(() => import("./pages/technician/TechnicianEarnings"));
+const TechnicianProfile = lazy(() => import("./pages/technician/TechnicianProfile"));
+
 const queryClient = new QueryClient();
 
 function PageLoader() {
@@ -115,6 +124,16 @@ const App = () => (
                   <Route path="invoices" element={<CustomerPortalInvoices />} />
                   <Route path="reviews" element={<CustomerPortalReviews />} />
                   <Route path="account" element={<CustomerPortalAccount />} />
+                </Route>
+
+                {/* Technician Portal routes */}
+                <Route path="/technician/auth" element={<TechnicianAuth />} />
+                <Route path="/technician" element={<TechnicianLayout />}>
+                  <Route index element={<TechnicianDashboard />} />
+                  <Route path="jobs" element={<TechnicianJobs />} />
+                  <Route path="jobs/:id" element={<TechnicianJobDetail />} />
+                  <Route path="earnings" element={<TechnicianEarnings />} />
+                  <Route path="profile" element={<TechnicianProfile />} />
                 </Route>
 
                 <Route path="*" element={<NotFound />} />
