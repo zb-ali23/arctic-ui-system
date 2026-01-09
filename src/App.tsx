@@ -38,6 +38,16 @@ const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
 const ProtectedRoute = lazy(() => import("./components/admin/ProtectedRoute").then(m => ({ default: m.ProtectedRoute })));
 
+// Customer Portal pages
+const CustomerPortalAuth = lazy(() => import("./pages/portal/CustomerPortalAuth"));
+const CustomerPortalLayout = lazy(() => import("./components/portal/CustomerPortalLayout"));
+const CustomerPortalDashboard = lazy(() => import("./pages/portal/CustomerPortalDashboard"));
+const CustomerPortalBookings = lazy(() => import("./pages/portal/CustomerPortalBookings"));
+const CustomerPortalHistory = lazy(() => import("./pages/portal/CustomerPortalHistory"));
+const CustomerPortalInvoices = lazy(() => import("./pages/portal/CustomerPortalInvoices"));
+const CustomerPortalReviews = lazy(() => import("./pages/portal/CustomerPortalReviews"));
+const CustomerPortalAccount = lazy(() => import("./pages/portal/CustomerPortalAccount"));
+
 const queryClient = new QueryClient();
 
 function PageLoader() {
@@ -94,6 +104,17 @@ const App = () => (
                   <Route path="content" element={<AdminContent />} />
                   <Route path="reports" element={<AdminReports />} />
                   <Route path="settings" element={<AdminSettings />} />
+                </Route>
+
+                {/* Customer Portal routes */}
+                <Route path="/portal/auth" element={<CustomerPortalAuth />} />
+                <Route path="/portal" element={<CustomerPortalLayout />}>
+                  <Route index element={<CustomerPortalDashboard />} />
+                  <Route path="bookings" element={<CustomerPortalBookings />} />
+                  <Route path="history" element={<CustomerPortalHistory />} />
+                  <Route path="invoices" element={<CustomerPortalInvoices />} />
+                  <Route path="reviews" element={<CustomerPortalReviews />} />
+                  <Route path="account" element={<CustomerPortalAccount />} />
                 </Route>
 
                 <Route path="*" element={<NotFound />} />
