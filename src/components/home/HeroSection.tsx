@@ -173,7 +173,7 @@ export function HeroSection() {
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute bottom-20 left-0 rounded-2xl bg-white/95 backdrop-blur-md p-4 shadow-2xl"
+                className="absolute bottom-20 right-0 rounded-2xl bg-white/95 backdrop-blur-md p-4 shadow-2xl"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
