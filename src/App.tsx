@@ -19,6 +19,7 @@ const FAQ = lazy(() => import("./pages/FAQ"));
 const Blog = lazy(() => import("./pages/Blog"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Book = lazy(() => import("./pages/Book"));
+const BookingStatus = lazy(() => import("./pages/BookingStatus"));
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="/blog" element={<Blog />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/book" element={<Book />} />
+              <Route path="/booking-status" element={<BookingStatus />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
