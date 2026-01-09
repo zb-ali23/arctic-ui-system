@@ -22,35 +22,49 @@ export function FloatingButtons() {
 
   return (
     <>
-      {/* Mobile Sticky Bottom CTA Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border p-3 md:hidden safe-area-inset-bottom">
-        <div className="flex items-center gap-3">
-          <a
-            href={`https://wa.me/${phoneNumber}?text=${whatsappMessage}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1"
-            aria-label="Chat on WhatsApp"
+      {/* Mobile Floating Buttons - Compact icons in bottom right */}
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 md:hidden">
+        <a
+          href={`https://wa.me/${phoneNumber}?text=${whatsappMessage}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat on WhatsApp"
+        >
+          <Button
+            size="icon"
+            className="h-12 w-12 rounded-full bg-[#25D366] hover:bg-[#20BD5A] text-white shadow-lg touch-manipulation"
           >
-            <Button
-              size="lg"
-              className="w-full rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white gap-2 touch-manipulation min-h-[48px]"
+            <MessageCircle className="h-5 w-5" aria-hidden="true" />
+          </Button>
+        </a>
+        <a href="tel:+15551234567" aria-label="Call us now">
+          <Button
+            size="icon"
+            variant="cta"
+            className="h-12 w-12 rounded-full shadow-lg touch-manipulation"
+          >
+            <Phone className="h-5 w-5" aria-hidden="true" />
+          </Button>
+        </a>
+        <AnimatePresence>
+          {showScrollTop && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
             >
-              <MessageCircle className="h-5 w-5" aria-hidden="true" />
-              <span>WhatsApp</span>
-            </Button>
-          </a>
-          <a href="tel:+15551234567" className="flex-1" aria-label="Call us now">
-            <Button
-              size="lg"
-              variant="cta"
-              className="w-full rounded-xl gap-2 touch-manipulation min-h-[48px]"
-            >
-              <Phone className="h-5 w-5" aria-hidden="true" />
-              <span>Call Now</span>
-            </Button>
-          </a>
-        </div>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="h-12 w-12 rounded-full shadow-lg touch-manipulation"
+                onClick={scrollToTop}
+                aria-label="Scroll to top"
+              >
+                <ArrowUp className="h-5 w-5" aria-hidden="true" />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Desktop Floating Buttons */}
