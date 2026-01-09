@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -23,13 +23,16 @@ import {
   Sparkles,
   BadgeCheck,
   Star,
-  Loader2
+  Loader2,
+  RotateCcw,
+  Edit3
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/ui/form-input";
 import { FormTextarea } from "@/components/ui/form-textarea";
+import { FormSelect } from "@/components/ui/form-select";
 import { AnimatedSection } from "@/components/ui/animated-section";
 
 // Step configuration
@@ -115,6 +118,60 @@ const timeSlots = [
   { id: "evening-2", label: "6:00 PM - 8:00 PM", period: "Evening" }
 ];
 
+// US States for dropdown
+const usStates = [
+  { value: "AL", label: "Alabama" },
+  { value: "AK", label: "Alaska" },
+  { value: "AZ", label: "Arizona" },
+  { value: "AR", label: "Arkansas" },
+  { value: "CA", label: "California" },
+  { value: "CO", label: "Colorado" },
+  { value: "CT", label: "Connecticut" },
+  { value: "DE", label: "Delaware" },
+  { value: "FL", label: "Florida" },
+  { value: "GA", label: "Georgia" },
+  { value: "HI", label: "Hawaii" },
+  { value: "ID", label: "Idaho" },
+  { value: "IL", label: "Illinois" },
+  { value: "IN", label: "Indiana" },
+  { value: "IA", label: "Iowa" },
+  { value: "KS", label: "Kansas" },
+  { value: "KY", label: "Kentucky" },
+  { value: "LA", label: "Louisiana" },
+  { value: "ME", label: "Maine" },
+  { value: "MD", label: "Maryland" },
+  { value: "MA", label: "Massachusetts" },
+  { value: "MI", label: "Michigan" },
+  { value: "MN", label: "Minnesota" },
+  { value: "MS", label: "Mississippi" },
+  { value: "MO", label: "Missouri" },
+  { value: "MT", label: "Montana" },
+  { value: "NE", label: "Nebraska" },
+  { value: "NV", label: "Nevada" },
+  { value: "NH", label: "New Hampshire" },
+  { value: "NJ", label: "New Jersey" },
+  { value: "NM", label: "New Mexico" },
+  { value: "NY", label: "New York" },
+  { value: "NC", label: "North Carolina" },
+  { value: "ND", label: "North Dakota" },
+  { value: "OH", label: "Ohio" },
+  { value: "OK", label: "Oklahoma" },
+  { value: "OR", label: "Oregon" },
+  { value: "PA", label: "Pennsylvania" },
+  { value: "RI", label: "Rhode Island" },
+  { value: "SC", label: "South Carolina" },
+  { value: "SD", label: "South Dakota" },
+  { value: "TN", label: "Tennessee" },
+  { value: "TX", label: "Texas" },
+  { value: "UT", label: "Utah" },
+  { value: "VT", label: "Vermont" },
+  { value: "VA", label: "Virginia" },
+  { value: "WA", label: "Washington" },
+  { value: "WV", label: "West Virginia" },
+  { value: "WI", label: "Wisconsin" },
+  { value: "WY", label: "Wyoming" }
+];
+
 // Trust messages for each step
 const trustMessages: Record<number, { icon: typeof ShieldCheck; message: string }> = {
   1: { icon: ShieldCheck, message: "Certified technicians • 90-day warranty on all repairs" },
@@ -124,6 +181,26 @@ const trustMessages: Record<number, { icon: typeof ShieldCheck; message: string 
   5: { icon: ShieldCheck, message: "Your data is secure • We never share your info" },
   6: { icon: MapPin, message: "Serving 50+ areas • Free service visit" },
   7: { icon: CheckCircle2, message: "100% satisfaction guaranteed • Easy rescheduling" }
+};
+
+// Initial form data
+const initialFormData: BookingFormData = {
+  category: "",
+  service: "",
+  problemDescription: "",
+  selectedProblems: [],
+  date: "",
+  timeSlot: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  address: "",
+  apartment: "",
+  city: "",
+  state: "",
+  zip: "",
+  notes: ""
 };
 
 // Form data interface
@@ -151,6 +228,11 @@ interface ValidationErrors {
   [key: string]: string;
 }
 
+// Touched fields interface
+interface TouchedFields {
+  [key: string]: boolean;
+}
+
 const STORAGE_KEY = "booking_form_data";
 
 export default function Book() {
@@ -162,25 +244,15 @@ export default function Book() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [bookingId, setBookingId] = useState("");
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [touched, setTouched] = useState<TouchedFields>({});
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   
-  const [formData, setFormData] = useState<BookingFormData>({
-    category: "",
-    service: "",
-    problemDescription: "",
-    selectedProblems: [],
-    date: "",
-    timeSlot: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
-    apartment: "",
-    city: "",
-    state: "",
-    zip: "",
-    notes: ""
-  });
+  // Refs for auto-focus
+  const firstNameRef = useRef<HTMLInputElement>(null);
+  const addressRef = useRef<HTMLInputElement>(null);
+  const dateRef = useRef<HTMLInputElement>(null);
+  
+  const [formData, setFormData] = useState<BookingFormData>(initialFormData);
 
   // Load saved data on mount
   useEffect(() => {
@@ -208,6 +280,20 @@ export default function Book() {
     }
   }, [formData, isSubmitted]);
 
+  // Auto-focus on step change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (currentStep === 4 && dateRef.current) {
+        dateRef.current.focus();
+      } else if (currentStep === 5 && firstNameRef.current) {
+        firstNameRef.current.focus();
+      } else if (currentStep === 6 && addressRef.current) {
+        addressRef.current.focus();
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [currentStep]);
+
   const updateFormData = useCallback((field: keyof BookingFormData, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when field is updated
@@ -216,6 +302,10 @@ export default function Book() {
     }
   }, [errors]);
 
+  const markFieldTouched = useCallback((field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  }, []);
+
   const toggleProblem = (problem: string) => {
     setFormData(prev => ({
       ...prev,
@@ -223,7 +313,53 @@ export default function Book() {
         ? prev.selectedProblems.filter(p => p !== problem)
         : [...prev.selectedProblems, problem]
     }));
+    // Clear problem error when something is selected
+    if (errors.problemDescription) {
+      setErrors(prev => ({ ...prev, problemDescription: "" }));
+    }
   };
+
+  // Real-time validation for individual fields
+  const validateField = useCallback((field: string, value: string): string => {
+    switch (field) {
+      case "firstName":
+      case "lastName":
+        if (!value.trim()) return `${field === "firstName" ? "First" : "Last"} name is required`;
+        if (value.length < 2) return "Must be at least 2 characters";
+        break;
+      case "email":
+        if (!value.trim()) return "Email is required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Please enter a valid email";
+        break;
+      case "phone":
+        if (!value.trim()) return "Phone number is required";
+        if (!/^[\d\s\-\(\)\+]{10,}$/.test(value.replace(/\s/g, ""))) return "Please enter a valid phone number";
+        break;
+      case "address":
+        if (!value.trim()) return "Address is required";
+        break;
+      case "city":
+        if (!value.trim()) return "City is required";
+        break;
+      case "zip":
+        if (!value.trim()) return "ZIP code is required";
+        if (!/^\d{5}(-\d{4})?$/.test(value)) return "Please enter a valid ZIP code";
+        break;
+    }
+    return "";
+  }, []);
+
+  const handleFieldBlur = useCallback((field: string, value: string) => {
+    markFieldTouched(field);
+    const error = validateField(field, value);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  }, [markFieldTouched, validateField]);
+
+  // Check if field is valid (for success state)
+  const isFieldValid = useCallback((field: string, value: string): boolean => {
+    if (!touched[field]) return false;
+    return !validateField(field, value);
+  }, [touched, validateField]);
 
   // Validation for each step
   const validateStep = (step: number): boolean => {
@@ -265,6 +401,12 @@ export default function Book() {
     }
     
     setErrors(newErrors);
+    
+    // Mark all relevant fields as touched
+    Object.keys(newErrors).forEach(field => {
+      setTouched(prev => ({ ...prev, [field]: true }));
+    });
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -285,6 +427,15 @@ export default function Book() {
       setDirection(-1);
       setCurrentStep(step);
     }
+  };
+
+  const handleReset = () => {
+    setFormData(initialFormData);
+    setCurrentStep(1);
+    setErrors({});
+    setTouched({});
+    setShowResetConfirm(false);
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const handleSubmit = async () => {
@@ -320,6 +471,14 @@ export default function Book() {
     return category?.find(s => s.id === formData.service)?.price || "";
   };
 
+  const getServiceTime = () => {
+    const category = servicesByCategory[formData.category as keyof typeof servicesByCategory];
+    return category?.find(s => s.id === formData.service)?.time || "";
+  };
+
+  // Check if there's any saved progress
+  const hasSavedProgress = formData.category || formData.service || formData.firstName;
+
   // Confirmation Screen
   if (isSubmitted) {
     return (
@@ -332,14 +491,29 @@ export default function Book() {
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
               className="text-center"
             >
-              {/* Success Icon */}
+              {/* Success Icon with confetti effect */}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
-                className="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25"
+                className="relative w-24 h-24 mx-auto mb-8"
               >
-                <CheckCircle2 className="h-12 w-12 text-white" />
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+                  <CheckCircle2 className="h-12 w-12 text-white" />
+                </div>
+                {/* Animated rings */}
+                <motion.div
+                  className="absolute inset-0 rounded-full border-4 border-green-400/30"
+                  initial={{ scale: 1, opacity: 1 }}
+                  animate={{ scale: 1.5, opacity: 0 }}
+                  transition={{ duration: 1, repeat: Infinity, repeatDelay: 0.5 }}
+                />
+                <motion.div
+                  className="absolute inset-0 rounded-full border-4 border-green-400/20"
+                  initial={{ scale: 1, opacity: 1 }}
+                  animate={{ scale: 2, opacity: 0 }}
+                  transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.5, delay: 0.2 }}
+                />
               </motion.div>
 
               <motion.h1
@@ -471,24 +645,9 @@ export default function Book() {
                 <Button variant="outline" size="lg" onClick={() => {
                   setIsSubmitted(false);
                   setCurrentStep(1);
-                  setFormData({
-                    category: "",
-                    service: "",
-                    problemDescription: "",
-                    selectedProblems: [],
-                    date: "",
-                    timeSlot: "",
-                    firstName: "",
-                    lastName: "",
-                    email: "",
-                    phone: "",
-                    address: "",
-                    apartment: "",
-                    city: "",
-                    state: "",
-                    zip: "",
-                    notes: ""
-                  });
+                  setFormData(initialFormData);
+                  setErrors({});
+                  setTouched({});
                 }}>
                   Book Another Service
                 </Button>
@@ -521,19 +680,23 @@ export default function Book() {
                     disabled={step.id > currentStep}
                     className="flex flex-col items-center group"
                   >
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all ${
-                      currentStep > step.id
-                        ? "bg-green-500 text-white"
-                        : currentStep === step.id
-                        ? "bg-frost text-frost-foreground ring-4 ring-frost/20"
-                        : "bg-muted text-muted-foreground"
-                    } ${step.id < currentStep ? "cursor-pointer hover:ring-2 hover:ring-frost/30" : ""}`}>
+                    <motion.div 
+                      className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold transition-all ${
+                        currentStep > step.id
+                          ? "bg-green-500 text-white"
+                          : currentStep === step.id
+                          ? "bg-frost text-frost-foreground ring-4 ring-frost/20"
+                          : "bg-muted text-muted-foreground"
+                      } ${step.id < currentStep ? "cursor-pointer hover:ring-2 hover:ring-frost/30" : ""}`}
+                      whileHover={step.id < currentStep ? { scale: 1.05 } : {}}
+                      whileTap={step.id < currentStep ? { scale: 0.95 } : {}}
+                    >
                       {currentStep > step.id ? (
                         <Check className="h-5 w-5" />
                       ) : (
                         <step.icon className="h-5 w-5" />
                       )}
-                    </div>
+                    </motion.div>
                     <span className={`text-xs mt-2 font-medium transition-colors ${
                       currentStep >= step.id ? "text-foreground" : "text-muted-foreground"
                     }`}>
@@ -541,9 +704,14 @@ export default function Book() {
                     </span>
                   </button>
                   {index < steps.length - 1 && (
-                    <div className={`flex-1 h-0.5 mx-2 transition-colors ${
-                      currentStep > step.id ? "bg-green-500" : "bg-muted"
-                    }`} />
+                    <div className="flex-1 h-0.5 mx-2 bg-muted overflow-hidden">
+                      <motion.div
+                        className="h-full bg-green-500"
+                        initial={{ width: 0 }}
+                        animate={{ width: currentStep > step.id ? "100%" : "0%" }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
                   )}
                 </div>
               ))}
@@ -567,6 +735,25 @@ export default function Book() {
                 animate={{ width: `${(currentStep / steps.length) * 100}%` }}
                 transition={{ duration: 0.3 }}
               />
+            </div>
+            {/* Step indicators */}
+            <div className="flex justify-between mt-2">
+              {steps.map((step) => (
+                <button
+                  key={step.id}
+                  onClick={() => goToStep(step.id)}
+                  disabled={step.id > currentStep}
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all ${
+                    currentStep > step.id
+                      ? "bg-green-500 text-white"
+                      : currentStep === step.id
+                      ? "bg-frost text-frost-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {currentStep > step.id ? <Check className="h-3 w-3" /> : step.id}
+                </button>
+              ))}
             </div>
           </AnimatedSection>
 
@@ -604,7 +791,7 @@ export default function Book() {
                           
                           <div className="grid sm:grid-cols-2 gap-4">
                             {categories.map((category) => (
-                              <button
+                              <motion.button
                                 key={category.id}
                                 onClick={() => {
                                   updateFormData("category", category.id);
@@ -616,6 +803,8 @@ export default function Book() {
                                     ? "border-frost bg-frost/5 shadow-lg"
                                     : "border-border hover:border-frost/50 hover:bg-muted/50"
                                 }`}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                               >
                                 <div className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-0 group-hover:opacity-5 transition-opacity`} />
                                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-colors ${
@@ -628,21 +817,30 @@ export default function Book() {
                                 <h3 className="text-lg font-semibold mb-1">{category.name}</h3>
                                 <p className="text-sm text-muted-foreground">{category.description}</p>
                                 {formData.category === category.id && (
-                                  <div className="absolute top-4 right-4">
+                                  <motion.div 
+                                    className="absolute top-4 right-4"
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ type: "spring", stiffness: 500 }}
+                                  >
                                     <div className="w-6 h-6 rounded-full bg-frost flex items-center justify-center">
                                       <Check className="h-4 w-4 text-frost-foreground" />
                                     </div>
-                                  </div>
+                                  </motion.div>
                                 )}
-                              </button>
+                              </motion.button>
                             ))}
                           </div>
                           
                           {errors.category && (
-                            <p className="text-destructive text-sm mt-4 flex items-center gap-2">
+                            <motion.p 
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-destructive text-sm mt-4 flex items-center gap-2"
+                            >
                               <AlertCircle className="h-4 w-4" />
                               {errors.category}
-                            </p>
+                            </motion.p>
                           )}
                         </div>
                       )}
@@ -656,8 +854,8 @@ export default function Book() {
                           </p>
                           
                           <div className="grid gap-3">
-                            {servicesByCategory[formData.category as keyof typeof servicesByCategory]?.map((service) => (
-                              <button
+                            {servicesByCategory[formData.category as keyof typeof servicesByCategory]?.map((service, index) => (
+                              <motion.button
                                 key={service.id}
                                 onClick={() => updateFormData("service", service.id)}
                                 className={`flex items-center justify-between p-4 rounded-xl border-2 text-left transition-all ${
@@ -665,19 +863,28 @@ export default function Book() {
                                     ? "border-frost bg-frost/5"
                                     : "border-border hover:border-frost/50"
                                 }`}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                                whileHover={{ x: 4 }}
                               >
                                 <div className="flex items-center gap-4">
-                                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
                                     formData.service === service.id 
                                       ? "border-frost bg-frost" 
                                       : "border-muted-foreground"
                                   }`}>
                                     {formData.service === service.id && (
-                                      <Check className="h-3 w-3 text-frost-foreground" />
+                                      <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                      >
+                                        <Check className="h-3 w-3 text-frost-foreground" />
+                                      </motion.div>
                                     )}
                                   </div>
                                   <div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                       <span className="font-medium">{service.name}</span>
                                       {service.popular && (
                                         <span className="px-2 py-0.5 text-xs font-medium bg-frost/10 text-frost rounded-full">
@@ -696,15 +903,19 @@ export default function Book() {
                                   </div>
                                 </div>
                                 <span className="text-sm font-semibold text-frost">{service.price}</span>
-                              </button>
+                              </motion.button>
                             ))}
                           </div>
                           
                           {errors.service && (
-                            <p className="text-destructive text-sm mt-4 flex items-center gap-2">
+                            <motion.p 
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-destructive text-sm mt-4 flex items-center gap-2"
+                            >
                               <AlertCircle className="h-4 w-4" />
                               {errors.service}
-                            </p>
+                            </motion.p>
                           )}
                         </div>
                       )}
@@ -721,7 +932,7 @@ export default function Book() {
                             <p className="text-sm font-medium mb-3">Common issues (select all that apply)</p>
                             <div className="flex flex-wrap gap-2">
                               {problemSuggestions[formData.category as keyof typeof problemSuggestions]?.map((problem) => (
-                                <button
+                                <motion.button
                                   key={problem}
                                   onClick={() => toggleProblem(problem)}
                                   className={`px-4 py-2 rounded-full text-sm transition-all ${
@@ -729,12 +940,14 @@ export default function Book() {
                                       ? "bg-frost text-frost-foreground"
                                       : "bg-muted hover:bg-muted/80 text-foreground"
                                   }`}
+                                  whileHover={{ scale: 1.02 }}
+                                  whileTap={{ scale: 0.98 }}
                                 >
                                   {formData.selectedProblems.includes(problem) && (
                                     <Check className="h-3 w-3 inline mr-1" />
                                   )}
                                   {problem}
-                                </button>
+                                </motion.button>
                               ))}
                             </div>
                           </div>
@@ -745,13 +958,19 @@ export default function Book() {
                             value={formData.problemDescription}
                             onChange={(e) => updateFormData("problemDescription", e.target.value)}
                             className="min-h-[120px]"
+                            showCharCount
+                            maxLength={500}
                           />
                           
                           {errors.problemDescription && (
-                            <p className="text-destructive text-sm mt-4 flex items-center gap-2">
+                            <motion.p 
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-destructive text-sm mt-4 flex items-center gap-2"
+                            >
                               <AlertCircle className="h-4 w-4" />
                               {errors.problemDescription}
-                            </p>
+                            </motion.p>
                           )}
                         </div>
                       )}
@@ -765,23 +984,27 @@ export default function Book() {
                           </p>
                           
                           <div className="space-y-6">
-                            <div>
-                              <FormInput
-                                label="Preferred Date"
-                                type="date"
-                                icon={Calendar}
-                                value={formData.date}
-                                onChange={(e) => updateFormData("date", e.target.value)}
-                                min={new Date().toISOString().split('T')[0]}
-                                error={errors.date}
-                              />
-                            </div>
+                            <FormInput
+                              ref={dateRef}
+                              label="Preferred Date"
+                              type="date"
+                              icon={Calendar}
+                              value={formData.date}
+                              onChange={(e) => updateFormData("date", e.target.value)}
+                              onBlur={(e) => handleFieldBlur("date", e.target.value)}
+                              min={new Date().toISOString().split('T')[0]}
+                              error={touched.date ? errors.date : undefined}
+                              success={isFieldValid("date", formData.date)}
+                              required
+                            />
                             
                             <div>
-                              <p className="text-sm font-medium mb-3">Preferred Time Slot</p>
+                              <p className="text-sm font-medium mb-3">
+                                Preferred Time Slot <span className="text-destructive">*</span>
+                              </p>
                               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {timeSlots.map((slot) => (
-                                  <button
+                                  <motion.button
                                     key={slot.id}
                                     onClick={() => updateFormData("timeSlot", slot.id)}
                                     className={`p-3 rounded-xl border-2 text-center transition-all ${
@@ -789,17 +1012,32 @@ export default function Book() {
                                         ? "border-frost bg-frost/5"
                                         : "border-border hover:border-frost/50"
                                     }`}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                   >
                                     <p className="text-xs text-muted-foreground mb-1">{slot.period}</p>
                                     <p className="text-sm font-medium">{slot.label}</p>
-                                  </button>
+                                    {formData.timeSlot === slot.id && (
+                                      <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="mt-1"
+                                      >
+                                        <Check className="h-4 w-4 text-frost mx-auto" />
+                                      </motion.div>
+                                    )}
+                                  </motion.button>
                                 ))}
                               </div>
                               {errors.timeSlot && (
-                                <p className="text-destructive text-sm mt-2 flex items-center gap-2">
+                                <motion.p 
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className="text-destructive text-sm mt-2 flex items-center gap-2"
+                                >
                                   <AlertCircle className="h-4 w-4" />
                                   {errors.timeSlot}
-                                </p>
+                                </motion.p>
                               )}
                             </div>
                           </div>
@@ -817,18 +1055,25 @@ export default function Book() {
                           <div className="space-y-5">
                             <div className="grid sm:grid-cols-2 gap-4">
                               <FormInput
+                                ref={firstNameRef}
                                 label="First Name"
                                 placeholder="John"
                                 value={formData.firstName}
                                 onChange={(e) => updateFormData("firstName", e.target.value)}
-                                error={errors.firstName}
+                                onBlur={(e) => handleFieldBlur("firstName", e.target.value)}
+                                error={touched.firstName ? errors.firstName : undefined}
+                                success={isFieldValid("firstName", formData.firstName)}
+                                required
                               />
                               <FormInput
                                 label="Last Name"
                                 placeholder="Doe"
                                 value={formData.lastName}
                                 onChange={(e) => updateFormData("lastName", e.target.value)}
-                                error={errors.lastName}
+                                onBlur={(e) => handleFieldBlur("lastName", e.target.value)}
+                                error={touched.lastName ? errors.lastName : undefined}
+                                success={isFieldValid("lastName", formData.lastName)}
+                                required
                               />
                             </div>
                             <FormInput
@@ -838,7 +1083,11 @@ export default function Book() {
                               icon={Mail}
                               value={formData.email}
                               onChange={(e) => updateFormData("email", e.target.value)}
-                              error={errors.email}
+                              onBlur={(e) => handleFieldBlur("email", e.target.value)}
+                              error={touched.email ? errors.email : undefined}
+                              success={isFieldValid("email", formData.email)}
+                              helperText="We'll send booking confirmation to this email"
+                              required
                             />
                             <FormInput
                               label="Phone Number"
@@ -847,7 +1096,11 @@ export default function Book() {
                               icon={Phone}
                               value={formData.phone}
                               onChange={(e) => updateFormData("phone", e.target.value)}
-                              error={errors.phone}
+                              onBlur={(e) => handleFieldBlur("phone", e.target.value)}
+                              error={touched.phone ? errors.phone : undefined}
+                              success={isFieldValid("phone", formData.phone)}
+                              helperText="For appointment reminders and updates"
+                              required
                             />
                           </div>
                         </div>
@@ -863,12 +1116,16 @@ export default function Book() {
                           
                           <div className="space-y-5">
                             <FormInput
+                              ref={addressRef}
                               label="Street Address"
                               placeholder="123 Main Street"
                               icon={MapPin}
                               value={formData.address}
                               onChange={(e) => updateFormData("address", e.target.value)}
-                              error={errors.address}
+                              onBlur={(e) => handleFieldBlur("address", e.target.value)}
+                              error={touched.address ? errors.address : undefined}
+                              success={isFieldValid("address", formData.address)}
+                              required
                             />
                             <FormInput
                               label="Apartment, Suite, etc. (optional)"
@@ -882,20 +1139,27 @@ export default function Book() {
                                 placeholder="City"
                                 value={formData.city}
                                 onChange={(e) => updateFormData("city", e.target.value)}
-                                error={errors.city}
+                                onBlur={(e) => handleFieldBlur("city", e.target.value)}
+                                error={touched.city ? errors.city : undefined}
+                                success={isFieldValid("city", formData.city)}
+                                required
                               />
-                              <FormInput
+                              <FormSelect
                                 label="State"
-                                placeholder="State"
+                                placeholder="Select state"
+                                options={usStates}
                                 value={formData.state}
-                                onChange={(e) => updateFormData("state", e.target.value)}
+                                onChange={(value) => updateFormData("state", value)}
                               />
                               <FormInput
                                 label="ZIP Code"
                                 placeholder="12345"
                                 value={formData.zip}
                                 onChange={(e) => updateFormData("zip", e.target.value)}
-                                error={errors.zip}
+                                onBlur={(e) => handleFieldBlur("zip", e.target.value)}
+                                error={touched.zip ? errors.zip : undefined}
+                                success={isFieldValid("zip", formData.zip)}
+                                required
                               />
                             </div>
                             <FormTextarea
@@ -903,6 +1167,7 @@ export default function Book() {
                               placeholder="Gate code, parking instructions, landmark, etc."
                               value={formData.notes}
                               onChange={(e) => updateFormData("notes", e.target.value)}
+                              className="min-h-[80px]"
                             />
                           </div>
                         </div>
@@ -916,9 +1181,15 @@ export default function Book() {
                             Please confirm your details before submitting
                           </p>
                           
-                          <div className="space-y-6">
+                          <div className="space-y-4">
                             {/* Service Summary */}
-                            <div className="rounded-xl bg-muted/50 p-5">
+                            <div className="rounded-xl bg-muted/50 p-5 relative group">
+                              <button
+                                onClick={() => goToStep(2)}
+                                className="absolute top-4 right-4 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                              >
+                                <Edit3 className="h-4 w-4 text-muted-foreground" />
+                              </button>
                               <h3 className="font-semibold mb-4 flex items-center gap-2">
                                 <Wrench className="h-4 w-4 text-frost" />
                                 Service Details
@@ -935,19 +1206,29 @@ export default function Book() {
                                   <span className="font-medium">{getServiceName()}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Problem</span>
-                                  <span className="font-medium text-right max-w-[200px]">
-                                    {formData.selectedProblems.length > 0 
-                                      ? formData.selectedProblems.slice(0, 2).join(", ")
-                                      : formData.problemDescription.substring(0, 50) + "..."
-                                    }
-                                  </span>
+                                  <span className="text-muted-foreground">Duration</span>
+                                  <span className="font-medium">{getServiceTime()}</span>
                                 </div>
+                                {formData.selectedProblems.length > 0 && (
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Issues</span>
+                                    <span className="font-medium text-right max-w-[200px]">
+                                      {formData.selectedProblems.slice(0, 2).join(", ")}
+                                      {formData.selectedProblems.length > 2 && ` +${formData.selectedProblems.length - 2} more`}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </div>
 
                             {/* Schedule Summary */}
-                            <div className="rounded-xl bg-muted/50 p-5">
+                            <div className="rounded-xl bg-muted/50 p-5 relative group">
+                              <button
+                                onClick={() => goToStep(4)}
+                                className="absolute top-4 right-4 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                              >
+                                <Edit3 className="h-4 w-4 text-muted-foreground" />
+                              </button>
                               <h3 className="font-semibold mb-4 flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-frost" />
                                 Appointment
@@ -974,7 +1255,13 @@ export default function Book() {
                             </div>
 
                             {/* Contact Summary */}
-                            <div className="rounded-xl bg-muted/50 p-5">
+                            <div className="rounded-xl bg-muted/50 p-5 relative group">
+                              <button
+                                onClick={() => goToStep(5)}
+                                className="absolute top-4 right-4 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                              >
+                                <Edit3 className="h-4 w-4 text-muted-foreground" />
+                              </button>
                               <h3 className="font-semibold mb-4 flex items-center gap-2">
                                 <User className="h-4 w-4 text-frost" />
                                 Contact Information
@@ -998,7 +1285,13 @@ export default function Book() {
                             </div>
 
                             {/* Address Summary */}
-                            <div className="rounded-xl bg-muted/50 p-5">
+                            <div className="rounded-xl bg-muted/50 p-5 relative group">
+                              <button
+                                onClick={() => goToStep(6)}
+                                className="absolute top-4 right-4 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                              >
+                                <Edit3 className="h-4 w-4 text-muted-foreground" />
+                              </button>
                               <h3 className="font-semibold mb-4 flex items-center gap-2">
                                 <MapPin className="h-4 w-4 text-frost" />
                                 Service Address
@@ -1029,14 +1322,25 @@ export default function Book() {
 
                   {/* Navigation Buttons */}
                   <div className="flex items-center justify-between mt-8 pt-6 border-t border-border">
-                    {currentStep > 1 ? (
-                      <Button variant="outline" onClick={prevStep} disabled={isSubmitting}>
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back
-                      </Button>
-                    ) : (
-                      <div />
-                    )}
+                    <div className="flex items-center gap-3">
+                      {currentStep > 1 && (
+                        <Button variant="outline" onClick={prevStep} disabled={isSubmitting}>
+                          <ArrowLeft className="h-4 w-4 mr-2" />
+                          Back
+                        </Button>
+                      )}
+                      {hasSavedProgress && currentStep === 1 && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setShowResetConfirm(true)}
+                          className="text-muted-foreground"
+                        >
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Start Over
+                        </Button>
+                      )}
+                    </div>
                     
                     {currentStep < 7 ? (
                       <Button variant="cta" onClick={nextStep}>
@@ -1066,6 +1370,41 @@ export default function Book() {
                   </div>
                 </div>
               </div>
+
+              {/* Reset Confirmation Modal */}
+              <AnimatePresence>
+                {showResetConfirm && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+                    onClick={() => setShowResetConfirm(false)}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.95, opacity: 0 }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-xl"
+                    >
+                      <h3 className="text-lg font-semibold mb-2">Start Over?</h3>
+                      <p className="text-muted-foreground text-sm mb-6">
+                        This will clear all your progress and start fresh. Are you sure?
+                      </p>
+                      <div className="flex gap-3 justify-end">
+                        <Button variant="outline" onClick={() => setShowResetConfirm(false)}>
+                          Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleReset}>
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Reset
+                        </Button>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Sidebar - Desktop */}
@@ -1076,21 +1415,33 @@ export default function Book() {
                   <h3 className="font-semibold mb-4">Your Booking</h3>
                   <div className="space-y-3 text-sm">
                     {formData.category && (
-                      <div className="flex justify-between">
+                      <motion.div 
+                        className="flex justify-between"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                      >
                         <span className="text-muted-foreground">Category</span>
                         <span className="font-medium">
                           {categories.find(c => c.id === formData.category)?.name}
                         </span>
-                      </div>
+                      </motion.div>
                     )}
                     {formData.service && (
-                      <div className="flex justify-between">
+                      <motion.div 
+                        className="flex justify-between"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                      >
                         <span className="text-muted-foreground">Service</span>
                         <span className="font-medium">{getServiceName()}</span>
-                      </div>
+                      </motion.div>
                     )}
                     {formData.date && (
-                      <div className="flex justify-between">
+                      <motion.div 
+                        className="flex justify-between"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                      >
                         <span className="text-muted-foreground">Date</span>
                         <span className="font-medium">
                           {new Date(formData.date).toLocaleDateString('en-US', {
@@ -1098,25 +1449,38 @@ export default function Book() {
                             day: 'numeric'
                           })}
                         </span>
-                      </div>
+                      </motion.div>
                     )}
                     {formData.timeSlot && (
-                      <div className="flex justify-between">
+                      <motion.div 
+                        className="flex justify-between"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                      >
                         <span className="text-muted-foreground">Time</span>
                         <span className="font-medium">
                           {timeSlots.find(t => t.id === formData.timeSlot)?.label.split(' - ')[0]}
                         </span>
-                      </div>
+                      </motion.div>
+                    )}
+                    {!formData.category && !formData.service && (
+                      <p className="text-muted-foreground text-center py-4">
+                        Select a service to see details
+                      </p>
                     )}
                   </div>
                   
                   {formData.service && (
-                    <div className="mt-4 pt-4 border-t border-border">
+                    <motion.div 
+                      className="mt-4 pt-4 border-t border-border"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground">Estimated</span>
                         <span className="text-lg font-bold text-frost">{getServicePrice()}</span>
                       </div>
-                    </div>
+                    </motion.div>
                   )}
                 </div>
 
