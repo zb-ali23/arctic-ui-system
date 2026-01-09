@@ -240,6 +240,13 @@ async function trackBooking(bookingNumber: string, logger: ReturnType<typeof cre
   return jsonResponse({ booking });
 }
 
+// Sanitize search input to prevent SQL injection
+function sanitizeSearch(input: string): string {
+  // Remove special characters that could be used for SQL/PostgREST injection
+  // Allow only alphanumeric, spaces, hyphens, and basic punctuation
+  return input.replace(/[^a-zA-Z0-9\s\-_.@]/g, '').substring(0, 100);
+}
+
 // List bookings (protected)
 async function listBookings(req: Request, auth: AuthContext, logger: ReturnType<typeof createLogger>) {
   const url = new URL(req.url);
@@ -249,7 +256,8 @@ async function listBookings(req: Request, auth: AuthContext, logger: ReturnType<
   const technicianId = url.searchParams.get('technician_id');
   const dateFrom = url.searchParams.get('date_from');
   const dateTo = url.searchParams.get('date_to');
-  const search = url.searchParams.get('search');
+  const rawSearch = url.searchParams.get('search');
+  const search = rawSearch ? sanitizeSearch(rawSearch) : null;
 
   const offset = (page - 1) * limit;
 
@@ -271,7 +279,7 @@ async function listBookings(req: Request, auth: AuthContext, logger: ReturnType<
   if (technicianId) query = query.eq('technician_id', technicianId);
   if (dateFrom) query = query.gte('scheduled_date', dateFrom);
   if (dateTo) query = query.lte('scheduled_date', dateTo);
-  if (search) query = query.or(`booking_number.ilike.%${search}%`);
+  if (search) query = query.ilike('booking_number', `%${search}%`);
 
   // Technicians can only see their assigned bookings
   if (auth.isTechnician && !auth.isAdmin) {
