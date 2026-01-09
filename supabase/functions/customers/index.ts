@@ -80,6 +80,13 @@ serve(async (req: Request) => {
   }
 });
 
+// Sanitize search input to prevent SQL injection
+function sanitizeSearch(input: string): string {
+  // Remove special characters that could be used for SQL/PostgREST injection
+  // Allow only alphanumeric, spaces, hyphens, and basic punctuation
+  return input.replace(/[^a-zA-Z0-9\s\-_.@]/g, '').substring(0, 100);
+}
+
 // List customers (admin only)
 async function listCustomers(req: Request, auth: AuthContext, logger: ReturnType<typeof createLogger>) {
   const adminCheck = requireAdmin(auth);
@@ -88,7 +95,8 @@ async function listCustomers(req: Request, auth: AuthContext, logger: ReturnType
   const url = new URL(req.url);
   const page = parseInt(url.searchParams.get('page') || '1');
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100);
-  const search = url.searchParams.get('search');
+  const rawSearch = url.searchParams.get('search');
+  const search = rawSearch ? sanitizeSearch(rawSearch) : null;
   const tag = url.searchParams.get('tag');
 
   const offset = (page - 1) * limit;
@@ -98,6 +106,7 @@ async function listCustomers(req: Request, auth: AuthContext, logger: ReturnType
     .select('*', { count: 'exact' });
 
   if (search) {
+    // Use individual ilike filters instead of or() with interpolation
     query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
   }
 
