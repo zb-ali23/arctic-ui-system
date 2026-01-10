@@ -199,6 +199,12 @@ export function Footer() {
               >
                 Terms of Service
               </Link>
+              <Link 
+                to="/admin/login" 
+                className="text-xs sm:text-sm text-primary-foreground/60 hover:text-primary-foreground transition-colors touch-manipulation py-1"
+              >
+                Admin
+              </Link>
             </nav>
           </div>
         </div>

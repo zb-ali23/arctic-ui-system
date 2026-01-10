@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Phone, Snowflake, ChevronDown } from "lucide-react";
+import { Menu, X, Phone, Snowflake, ChevronDown, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import {
@@ -128,6 +128,11 @@ export function Header() {
 
         {/* Desktop CTA */}
         <div className="hidden lg:flex items-center gap-3">
+          <Button variant={isScrolled || !isHome ? "ghost" : "glass"} size="icon" asChild>
+            <Link to="/admin/login" title="Portal Login">
+              <User className="h-4 w-4" />
+            </Link>
+          </Button>
           <Button variant={isScrolled || !isHome ? "outline" : "glass"} size="sm" asChild>
             <Link to="/book">Book Service</Link>
           </Button>
@@ -217,6 +222,22 @@ export function Header() {
                   <Phone className="h-4 w-4 mr-2" />
                   (555) 123-4567
                 </Button>
+                <div className="pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-2 text-center">Staff & Partners</p>
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="sm" className="flex-1" asChild>
+                      <Link to="/admin/login" onClick={() => setMobileMenuOpen(false)}>
+                        <User className="h-4 w-4 mr-1" />
+                        Admin
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="flex-1" asChild>
+                      <Link to="/technician/auth" onClick={() => setMobileMenuOpen(false)}>
+                        Technician
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </SheetContent>
