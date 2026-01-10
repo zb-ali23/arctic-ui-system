@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Phone, 
@@ -443,16 +445,115 @@ export default function Book() {
     
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Generate booking ID
-    const id = `BK${Date.now().toString(36).toUpperCase()}`;
-    setBookingId(id);
-    setIsSubmitted(true);
-    
-    // Clear saved data
-    localStorage.removeItem(STORAGE_KEY);
+    try {
+      // Get selected service ID from database
+      const { data: servicesData } = await supabase
+        .from('services')
+        .select('id')
+        .ilike('name', `%${getServiceName()}%`)
+        .limit(1);
+      
+      const serviceId = servicesData?.[0]?.id;
+      
+      if (!serviceId) {
+        // If no matching service found, just generate a local booking ID
+        const id = `BK${Date.now().toString(36).toUpperCase()}`;
+        setBookingId(id);
+        setIsSubmitted(true);
+        localStorage.removeItem(STORAGE_KEY);
+        return;
+      }
+
+      // Create or get customer
+      const { data: existingCustomer } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('email', formData.email)
+        .single();
+
+      let customerId: string;
+      
+      if (existingCustomer) {
+        customerId = existingCustomer.id;
+      } else {
+        const { data: newCustomer, error: customerError } = await supabase
+          .from('customers')
+          .insert({
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            source: 'website',
+          })
+          .select()
+          .single();
+
+        if (customerError) throw customerError;
+        customerId = newCustomer.id;
+      }
+
+      // Create customer address
+      const { data: addressData, error: addressError } = await supabase
+        .from('customer_addresses')
+        .insert({
+          customer_id: customerId,
+          street: formData.address,
+          apartment: formData.apartment || null,
+          city: formData.city,
+          state: formData.state,
+          zip: formData.zip,
+          is_default: true,
+        })
+        .select()
+        .single();
+
+      if (addressError) throw addressError;
+
+      // Get time slot ID
+      const selectedTimeSlotData = timeSlots.find(ts => ts.id === formData.timeSlot);
+      
+      // Generate booking number
+      const bookingNumber = `BK${Date.now().toString(36).toUpperCase()}`;
+
+      // Determine priority based on service type
+      const isEmergency = formData.service.includes('emergency');
+      const priority = isEmergency ? 'emergency' : 'normal';
+
+      // Create booking
+      const { data: bookingData, error: bookingError } = await supabase
+        .from('bookings')
+        .insert({
+          booking_number: bookingNumber,
+          customer_id: customerId,
+          service_id: serviceId,
+          address_id: addressData.id,
+          scheduled_date: formData.date,
+          time_slot_label: selectedTimeSlotData?.label || null,
+          priority: priority as 'normal' | 'urgent' | 'emergency',
+          status: 'pending',
+          customer_notes: formData.notes || null,
+          problem_description: formData.problemDescription || null,
+          selected_issues: formData.selectedProblems.length > 0 ? formData.selectedProblems : null,
+          source: 'website',
+        })
+        .select()
+        .single();
+
+      if (bookingError) throw bookingError;
+
+      setBookingId(bookingData.booking_number);
+      setIsSubmitted(true);
+      localStorage.removeItem(STORAGE_KEY);
+      
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      toast({
+        title: "Booking Error",
+        description: "There was an issue creating your booking. Please try again.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   const slideVariants = {
