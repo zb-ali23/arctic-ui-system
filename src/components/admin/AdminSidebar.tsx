@@ -199,6 +199,7 @@ export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps) {
         {/* Navigation */}
         <ScrollArea className="flex-1 py-4">
           <nav className="space-y-1 px-2">
+            {/* Regular nav items */}
             {filteredNavItems.map((item) => {
               const isActive = location.pathname === item.href || 
                 (item.children?.some(c => location.pathname === c.href));
@@ -267,6 +268,41 @@ export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps) {
                     </Link>
                   )}
                 </div>
+              );
+            })}
+
+            {/* Super Admin Section */}
+            {user?.isSuperAdmin && !collapsed && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="px-3 mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-destructive flex items-center gap-2">
+                    <Crown className="h-3 w-3" />
+                    Super Admin
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Super Admin nav items */}
+            {user?.isSuperAdmin && superAdminItems.map((item) => {
+              const isActive = location.pathname === item.href;
+              const Icon = item.icon;
+
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                    isActive 
+                      ? 'bg-destructive/10 text-destructive' 
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                    collapsed && 'justify-center'
+                  )}
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  {!collapsed && <span>{item.title}</span>}
+                </Link>
               );
             })}
           </nav>

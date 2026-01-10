@@ -24,6 +24,9 @@ const BookingStatus = lazy(() => import("./pages/BookingStatus"));
 
 // Admin pages
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+const AdminSignup = lazy(() => import("./pages/admin/AdminSignup"));
+const ForgotPassword = lazy(() => import("./pages/admin/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/admin/ResetPassword"));
 const AdminUnauthorized = lazy(() => import("./pages/admin/AdminUnauthorized"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminBookings = lazy(() => import("./pages/admin/AdminBookings"));
@@ -35,6 +38,14 @@ const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
 const AdminContent = lazy(() => import("./pages/admin/AdminContent"));
 const AdminReports = lazy(() => import("./pages/admin/AdminReports"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+
+// Super Admin pages
+const SuperAdminDashboard = lazy(() => import("./pages/admin/SuperAdminDashboard"));
+const AdminManagement = lazy(() => import("./pages/admin/AdminManagement"));
+const RolesPermissions = lazy(() => import("./pages/admin/RolesPermissions"));
+const BusinessAnalytics = lazy(() => import("./pages/admin/BusinessAnalytics"));
+const ActivityLogs = lazy(() => import("./pages/admin/ActivityLogs"));
+
 const AdminLayout = lazy(() => import("./components/admin/AdminLayout").then(m => ({ default: m.AdminLayout })));
 const ProtectedRoute = lazy(() => import("./components/admin/ProtectedRoute").then(m => ({ default: m.ProtectedRoute })));
 
@@ -95,9 +106,14 @@ const App = () => (
                 <Route path="/book" element={<Book />} />
                 <Route path="/booking-status" element={<BookingStatus />} />
 
-                {/* Admin routes */}
+                {/* Admin auth routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin/signup" element={<AdminSignup />} />
+                <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+                <Route path="/admin/reset-password" element={<ResetPassword />} />
                 <Route path="/admin/unauthorized" element={<AdminUnauthorized />} />
+                
+                {/* Protected admin routes */}
                 <Route path="/admin" element={
                   <ProtectedRoute>
                     <AdminLayout />
@@ -113,6 +129,33 @@ const App = () => (
                   <Route path="content" element={<AdminContent />} />
                   <Route path="reports" element={<AdminReports />} />
                   <Route path="settings" element={<AdminSettings />} />
+                  
+                  {/* Super Admin routes */}
+                  <Route path="super-admin" element={
+                    <ProtectedRoute requireSuperAdmin>
+                      <SuperAdminDashboard />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="admin-management" element={
+                    <ProtectedRoute requireSuperAdmin>
+                      <AdminManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="roles-permissions" element={
+                    <ProtectedRoute requireSuperAdmin>
+                      <RolesPermissions />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="analytics" element={
+                    <ProtectedRoute requireSuperAdmin>
+                      <BusinessAnalytics />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="activity-logs" element={
+                    <ProtectedRoute requireSuperAdmin>
+                      <ActivityLogs />
+                    </ProtectedRoute>
+                  } />
                 </Route>
 
                 {/* Customer Portal routes */}

@@ -3,6 +3,14 @@ import { corsHeaders } from './cors.ts';
 
 export type AppRole = 'super_admin' | 'manager' | 'technician' | 'customer';
 
+// Permanent Super Admin email - hardcoded for security
+export const SUPER_ADMIN_EMAIL = 'zohaibali.codes@gmail.com';
+
+export function isSuperAdminEmail(email: string | undefined | null): boolean {
+  if (!email) return false;
+  return email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+}
+
 // deno-lint-ignore no-explicit-any
 export type SupabaseClientType = SupabaseClient<any, any, any>;
 
@@ -12,6 +20,7 @@ export interface AuthContext {
   email?: string;
   roles: AppRole[];
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isTechnician: boolean;
   technicianId?: string;
 }
@@ -64,7 +73,16 @@ export async function authenticate(req: Request): Promise<AuthContext | Response
     .eq('user_id', userId);
 
   const roles = (rolesData || []).map(r => r.role as AppRole);
-  const isAdmin = roles.includes('super_admin') || roles.includes('manager');
+  
+  // Check if this is the permanent super admin email
+  const isSuperAdmin = isSuperAdminEmail(email);
+  
+  // If super admin email, ensure super_admin role is included
+  if (isSuperAdmin && !roles.includes('super_admin')) {
+    roles.push('super_admin');
+  }
+  
+  const isAdmin = isSuperAdmin || roles.includes('super_admin') || roles.includes('manager');
   const isTechnician = roles.includes('technician');
 
   // Get technician ID if user is a technician
@@ -84,6 +102,7 @@ export async function authenticate(req: Request): Promise<AuthContext | Response
     email,
     roles,
     isAdmin,
+    isSuperAdmin,
     isTechnician,
     technicianId,
   };
@@ -93,6 +112,16 @@ export function requireAdmin(auth: AuthContext): Response | null {
   if (!auth.isAdmin) {
     return new Response(
       JSON.stringify({ error: 'Forbidden', message: 'Admin access required' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+  return null;
+}
+
+export function requireSuperAdmin(auth: AuthContext): Response | null {
+  if (!auth.isSuperAdmin) {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden', message: 'Super Admin access required' }),
       { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
