@@ -30,7 +30,11 @@ const ResetPassword = lazy(() => import("./pages/admin/ResetPassword"));
 const AdminUnauthorized = lazy(() => import("./pages/admin/AdminUnauthorized"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminBookings = lazy(() => import("./pages/admin/AdminBookings"));
+const NewBooking = lazy(() => import("./pages/admin/NewBooking"));
+const BookingDetail = lazy(() => import("./pages/admin/BookingDetail"));
 const AdminCustomers = lazy(() => import("./pages/admin/AdminCustomers"));
+const NewCustomer = lazy(() => import("./pages/admin/NewCustomer"));
+const CustomerDetail = lazy(() => import("./pages/admin/CustomerDetail"));
 const AdminTechnicians = lazy(() => import("./pages/admin/AdminTechnicians"));
 const AdminServices = lazy(() => import("./pages/admin/AdminServices"));
 const AdminPayments = lazy(() => import("./pages/admin/AdminPayments"));
@@ -121,7 +125,11 @@ const App = () => (
                 }>
                   <Route index element={<AdminDashboard />} />
                   <Route path="bookings" element={<AdminBookings />} />
+                  <Route path="bookings/new" element={<NewBooking />} />
+                  <Route path="bookings/:id" element={<BookingDetail />} />
                   <Route path="customers" element={<AdminCustomers />} />
+                  <Route path="customers/new" element={<NewCustomer />} />
+                  <Route path="customers/:id" element={<CustomerDetail />} />
                   <Route path="technicians" element={<AdminTechnicians />} />
                   <Route path="services" element={<AdminServices />} />
                   <Route path="payments" element={<AdminPayments />} />
