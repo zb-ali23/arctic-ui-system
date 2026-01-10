@@ -18,8 +18,11 @@ import {
   ChevronRight,
   LogOut,
   Package,
-  HelpCircle,
-  MessageSquare
+  Shield,
+  UserCog,
+  Key,
+  Activity,
+  Crown
 } from 'lucide-react';
 
 interface NavItem {
@@ -27,6 +30,7 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   roles?: ('super_admin' | 'manager' | 'technician')[];
+  superAdminOnly?: boolean;
   children?: { title: string; href: string }[];
 }
 
@@ -96,6 +100,40 @@ const navItems: NavItem[] = [
   },
 ];
 
+// Super Admin exclusive menu items
+const superAdminItems: NavItem[] = [
+  {
+    title: 'System Control',
+    href: '/admin/super-admin',
+    icon: Shield,
+    superAdminOnly: true,
+  },
+  {
+    title: 'Admin Management',
+    href: '/admin/admin-management',
+    icon: UserCog,
+    superAdminOnly: true,
+  },
+  {
+    title: 'Roles & Permissions',
+    href: '/admin/roles-permissions',
+    icon: Key,
+    superAdminOnly: true,
+  },
+  {
+    title: 'Business Analytics',
+    href: '/admin/analytics',
+    icon: BarChart3,
+    superAdminOnly: true,
+  },
+  {
+    title: 'Activity Logs',
+    href: '/admin/activity-logs',
+    icon: Activity,
+    superAdminOnly: true,
+  },
+];
+
 interface AdminSidebarProps {
   collapsed: boolean;
   onCollapse: (collapsed: boolean) => void;
@@ -124,6 +162,11 @@ export function AdminSidebar({ collapsed, onCollapse }: AdminSidebarProps) {
     if (!item.roles) return true;
     return user?.roles.some(r => item.roles?.includes(r as 'super_admin' | 'manager' | 'technician'));
   });
+
+  // Add super admin items if user is super admin
+  const allNavItems = user?.isSuperAdmin 
+    ? [...filteredNavItems, ...superAdminItems] 
+    : filteredNavItems;
 
   return (
     <aside

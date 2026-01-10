@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import { isSuperAdminEmail, SUPER_ADMIN_EMAIL } from '@/lib/super-admin';
 
 export type AppRole = 'super_admin' | 'manager' | 'technician' | 'customer';
 
@@ -13,6 +14,7 @@ interface AuthUser {
   roles: AppRole[];
   isAdmin: boolean;
   isTechnician: boolean;
+  isSuperAdmin: boolean;
   technicianId?: string;
 }
 
@@ -80,7 +82,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('user_id', authUser.id);
 
       const roles = (rolesData || []).map(r => r.role as AppRole);
-      const isAdmin = roles.includes('super_admin') || roles.includes('manager');
+      
+      // Check if this is the permanent super admin email
+      const isSuperAdmin = isSuperAdminEmail(authUser.email);
+      
+      // If super admin email, ensure super_admin role is included
+      if (isSuperAdmin && !roles.includes('super_admin')) {
+        roles.push('super_admin');
+      }
+      
+      const isAdmin = isSuperAdmin || roles.includes('super_admin') || roles.includes('manager');
       const isTechnician = roles.includes('technician');
 
       // Fetch technician ID if applicable
@@ -103,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         roles,
         isAdmin,
         isTechnician,
+        isSuperAdmin,
         technicianId,
       });
     } catch (error) {
