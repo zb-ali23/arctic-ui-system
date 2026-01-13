@@ -27,9 +27,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Search, 
@@ -40,7 +48,8 @@ import {
   Wrench,
   Calendar,
   Edit,
-  ToggleLeft
+  ToggleLeft,
+  Loader2
 } from 'lucide-react';
 
 interface Technician {
@@ -58,23 +67,41 @@ interface Technician {
   created_at: string;
 }
 
+interface Profile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+const SPECIALIZATIONS = ['ac', 'refrigerator', 'hvac', 'commercial'] as const;
+
 export default function AdminTechnicians() {
   const [technicians, setTechnicians] = useState<Technician[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTechnician, setSelectedTechnician] = useState<Technician | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [availabilityDialogOpen, setAvailabilityDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [addLoading, setAddLoading] = useState(false);
   const [editForm, setEditForm] = useState({
     employee_id: '',
     hourly_rate: 0,
     is_active: true,
     is_available: true,
   });
+  const [addForm, setAddForm] = useState({
+    user_id: '',
+    employee_id: '',
+    hourly_rate: 0,
+    specializations: [] as string[],
+  });
   const { toast } = useToast();
 
   useEffect(() => {
     fetchTechnicians();
+    fetchProfiles();
   }, []);
 
   const fetchTechnicians = async () => {
@@ -92,6 +119,77 @@ export default function AdminTechnicians() {
       toast({ title: 'Error', description: 'Failed to fetch technicians', variant: 'destructive' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProfiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .eq('is_active', true);
+
+      if (error) throw error;
+      setProfiles(data || []);
+    } catch (error) {
+      console.error('Error fetching profiles:', error);
+    }
+  };
+
+  const handleAddTechnician = async () => {
+    if (!addForm.user_id) {
+      toast({ title: 'Error', description: 'Please select a user', variant: 'destructive' });
+      return;
+    }
+    
+    setAddLoading(true);
+    try {
+      // Check if technician already exists for this user
+      const { data: existing } = await supabase
+        .from('technicians')
+        .select('id')
+        .eq('user_id', addForm.user_id)
+        .single();
+
+      if (existing) {
+        toast({ title: 'Error', description: 'This user is already a technician', variant: 'destructive' });
+        setAddLoading(false);
+        return;
+      }
+
+      // Create technician
+      const { error } = await supabase
+        .from('technicians')
+        .insert({
+          user_id: addForm.user_id,
+          employee_id: addForm.employee_id || null,
+          hourly_rate: addForm.hourly_rate || null,
+          specializations: addForm.specializations.length > 0 
+            ? addForm.specializations as ("ac" | "refrigerator" | "hvac" | "commercial")[]
+            : null,
+          is_active: true,
+          is_available: true,
+        });
+
+      if (error) throw error;
+
+      // Also add technician role to user_roles
+      await supabase
+        .from('user_roles')
+        .insert({
+          user_id: addForm.user_id,
+          role: 'technician',
+        });
+
+      toast({ title: 'Success', description: 'Technician added successfully' });
+      setAddDialogOpen(false);
+      setAddForm({ user_id: '', employee_id: '', hourly_rate: 0, specializations: [] });
+      fetchTechnicians();
+    } catch (error: any) {
+      console.error('Error adding technician:', error);
+      toast({ title: 'Error', description: error.message || 'Failed to add technician', variant: 'destructive' });
+    } finally {
+      setAddLoading(false);
     }
   };
 
@@ -182,7 +280,7 @@ export default function AdminTechnicians() {
           <h1 className="text-2xl font-bold tracking-tight">Technicians</h1>
           <p className="text-muted-foreground">Manage technician profiles and performance</p>
         </div>
-        <Button>
+        <Button onClick={() => setAddDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Technician
         </Button>
@@ -402,6 +500,93 @@ export default function AdminTechnicians() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleUpdateTechnician}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Technician Dialog */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Technician</DialogTitle>
+            <DialogDescription>
+              Create a new technician profile. The user must have a profile account first.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Select User *</Label>
+              <Select
+                value={addForm.user_id}
+                onValueChange={(value) => setAddForm({ ...addForm, user_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a user profile" />
+                </SelectTrigger>
+                <SelectContent>
+                  {profiles.length === 0 ? (
+                    <SelectItem value="_empty" disabled>No profiles available</SelectItem>
+                  ) : (
+                    profiles
+                      .filter(p => !technicians.some(t => t.user_id === p.id))
+                      .map((profile) => (
+                        <SelectItem key={profile.id} value={profile.id}>
+                          {profile.first_name} {profile.last_name} - {profile.email}
+                        </SelectItem>
+                      ))
+                  )}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Only users with profiles who aren't already technicians are shown
+              </p>
+            </div>
+            <div>
+              <Label>Employee ID</Label>
+              <Input
+                value={addForm.employee_id}
+                onChange={(e) => setAddForm({ ...addForm, employee_id: e.target.value })}
+                placeholder="e.g., TECH-001"
+              />
+            </div>
+            <div>
+              <Label>Hourly Rate ($)</Label>
+              <Input
+                type="number"
+                value={addForm.hourly_rate}
+                onChange={(e) => setAddForm({ ...addForm, hourly_rate: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <Label>Specializations</Label>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {SPECIALIZATIONS.map((spec) => (
+                  <div key={spec} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={spec}
+                      checked={addForm.specializations.includes(spec)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setAddForm({ ...addForm, specializations: [...addForm.specializations, spec] });
+                        } else {
+                          setAddForm({ ...addForm, specializations: addForm.specializations.filter(s => s !== spec) });
+                        }
+                      }}
+                    />
+                    <label htmlFor={spec} className="text-sm font-medium leading-none uppercase">
+                      {spec}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddTechnician} disabled={addLoading}>
+              {addLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Add Technician
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

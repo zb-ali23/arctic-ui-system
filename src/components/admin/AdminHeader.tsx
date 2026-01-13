@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -19,24 +20,58 @@ import {
   Settings, 
   User, 
   LogOut,
-  Moon,
-  Sun,
   Menu
 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 interface AdminHeaderProps {
   onMenuClick?: () => void;
 }
 
+interface Notification {
+  id: string;
+  type: string;
+  content: string;
+  booking_id: string | null;
+  status: string | null;
+  created_at: string;
+}
+
 export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const { user, signOut } = useAuth();
-  const [notifications] = useState([
-    { id: 1, title: 'New booking received', time: '5 min ago', unread: true },
-    { id: 2, title: 'Technician completed job', time: '1 hour ago', unread: true },
-    { id: 3, title: 'Payment received', time: '2 hours ago', unread: false },
-  ]);
+  const navigate = useNavigate();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('id, type, content, booking_id, status, created_at')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setNotifications(data || []);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (notification.booking_id) {
+      navigate(`/admin/bookings/${notification.booking_id}`);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => n.status === 'pending' || n.status === 'sent').length;
 
   const getInitials = () => {
     if (!user) return 'U';
@@ -96,17 +131,31 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
               </Button>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {notifications.map((notification) => (
-              <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 p-3">
-                <div className="flex items-center gap-2 w-full">
-                  {notification.unread && (
-                    <span className="h-2 w-2 rounded-full bg-primary" />
-                  )}
-                  <span className={notification.unread ? 'font-medium' : ''}>{notification.title}</span>
-                </div>
-                <span className="text-xs text-muted-foreground ml-4">{notification.time}</span>
+            {notifications.length === 0 ? (
+              <DropdownMenuItem className="text-center text-muted-foreground py-4">
+                No notifications
               </DropdownMenuItem>
-            ))}
+            ) : (
+              notifications.slice(0, 5).map((notification) => (
+                <DropdownMenuItem 
+                  key={notification.id} 
+                  className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="flex items-center gap-2 w-full">
+                    {(notification.status === 'pending' || notification.status === 'sent') && (
+                      <span className="h-2 w-2 rounded-full bg-primary" />
+                    )}
+                    <span className={notification.status === 'pending' ? 'font-medium' : ''}>
+                      {notification.content.substring(0, 50)}{notification.content.length > 50 ? '...' : ''}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground ml-4">
+                    {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                  </span>
+                </DropdownMenuItem>
+              ))
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem className="justify-center text-primary">
               View all notifications

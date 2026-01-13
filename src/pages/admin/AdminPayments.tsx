@@ -42,9 +42,12 @@ import {
   CreditCard,
   CheckCircle,
   Clock,
-  AlertCircle,
-  Download
+  Download,
+  Plus,
+  Loader2
 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Payment {
   id: string;
@@ -74,20 +77,54 @@ interface Invoice {
   bookings: { booking_number: string } | null;
 }
 
+interface Booking {
+  id: string;
+  booking_number: string;
+  customer_id: string;
+  final_price: number | null;
+  estimated_price: number | null;
+  customers: { first_name: string; last_name: string } | null;
+}
+
 export default function AdminPayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [markPaidDialogOpen, setMarkPaidDialogOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cash');
+  
+  // New payment dialog
+  const [newPaymentDialogOpen, setNewPaymentDialogOpen] = useState(false);
+  const [newPaymentLoading, setNewPaymentLoading] = useState(false);
+  const [newPaymentForm, setNewPaymentForm] = useState({
+    booking_id: '',
+    amount: 0,
+    payment_method: 'cash',
+    notes: '',
+  });
+  
+  // New invoice dialog
+  const [newInvoiceDialogOpen, setNewInvoiceDialogOpen] = useState(false);
+  const [newInvoiceLoading, setNewInvoiceLoading] = useState(false);
+  const [newInvoiceForm, setNewInvoiceForm] = useState({
+    booking_id: '',
+    subtotal: 0,
+    tax_rate: 0,
+    discount: 0,
+    notes: '',
+    due_days: 30,
+  });
+  
   const { toast } = useToast();
 
   useEffect(() => {
     fetchPayments();
     fetchInvoices();
+    fetchBookings();
   }, []);
 
   const fetchPayments = async () => {
@@ -143,6 +180,147 @@ export default function AdminPayments() {
       setInvoices((data || []) as Invoice[]);
     } catch (error) {
       console.error('Error fetching invoices:', error);
+    }
+  };
+
+  const fetchBookings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          id,
+          booking_number,
+          customer_id,
+          final_price,
+          estimated_price,
+          customers (first_name, last_name)
+        `)
+        .in('status', ['completed', 'in_progress'])
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      setBookings((data || []) as Booking[]);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
+  };
+
+  const handleCreatePayment = async () => {
+    if (!newPaymentForm.booking_id || newPaymentForm.amount <= 0) {
+      toast({ title: 'Error', description: 'Please select a booking and enter an amount', variant: 'destructive' });
+      return;
+    }
+
+    setNewPaymentLoading(true);
+    try {
+      const selectedBooking = bookings.find(b => b.id === newPaymentForm.booking_id);
+      if (!selectedBooking) throw new Error('Booking not found');
+
+      // First create or get an invoice for this booking
+      let invoiceId: string;
+      const { data: existingInvoice } = await supabase
+        .from('invoices')
+        .select('id')
+        .eq('booking_id', newPaymentForm.booking_id)
+        .single();
+
+      if (existingInvoice) {
+        invoiceId = existingInvoice.id;
+      } else {
+        // Create a simple invoice
+        const invoiceNumber = `INV-${Date.now().toString(36).toUpperCase()}`;
+        const { data: newInvoice, error: invoiceError } = await supabase
+          .from('invoices')
+          .insert({
+            invoice_number: invoiceNumber,
+            booking_id: newPaymentForm.booking_id,
+            customer_id: selectedBooking.customer_id,
+            subtotal: newPaymentForm.amount,
+            total_amount: newPaymentForm.amount,
+            status: 'paid',
+            issue_date: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (invoiceError) throw invoiceError;
+        invoiceId = newInvoice.id;
+      }
+
+      // Create the payment
+      const { error } = await supabase
+        .from('payments')
+        .insert({
+          booking_id: newPaymentForm.booking_id,
+          customer_id: selectedBooking.customer_id,
+          invoice_id: invoiceId,
+          amount: newPaymentForm.amount,
+          payment_method: newPaymentForm.payment_method,
+          status: 'paid',
+          processed_at: new Date().toISOString(),
+          notes: newPaymentForm.notes || null,
+        });
+
+      if (error) throw error;
+
+      toast({ title: 'Success', description: 'Payment recorded successfully' });
+      setNewPaymentDialogOpen(false);
+      setNewPaymentForm({ booking_id: '', amount: 0, payment_method: 'cash', notes: '' });
+      fetchPayments();
+      fetchInvoices();
+    } catch (error: any) {
+      console.error('Error creating payment:', error);
+      toast({ title: 'Error', description: error.message || 'Failed to create payment', variant: 'destructive' });
+    } finally {
+      setNewPaymentLoading(false);
+    }
+  };
+
+  const handleCreateInvoice = async () => {
+    if (!newInvoiceForm.booking_id || newInvoiceForm.subtotal <= 0) {
+      toast({ title: 'Error', description: 'Please select a booking and enter a subtotal', variant: 'destructive' });
+      return;
+    }
+
+    setNewInvoiceLoading(true);
+    try {
+      const selectedBooking = bookings.find(b => b.id === newInvoiceForm.booking_id);
+      if (!selectedBooking) throw new Error('Booking not found');
+
+      const taxAmount = (newInvoiceForm.subtotal * newInvoiceForm.tax_rate) / 100;
+      const totalAmount = newInvoiceForm.subtotal + taxAmount - newInvoiceForm.discount;
+      const invoiceNumber = `INV-${Date.now().toString(36).toUpperCase()}`;
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + newInvoiceForm.due_days);
+
+      const { error } = await supabase
+        .from('invoices')
+        .insert({
+          invoice_number: invoiceNumber,
+          booking_id: newInvoiceForm.booking_id,
+          customer_id: selectedBooking.customer_id,
+          subtotal: newInvoiceForm.subtotal,
+          tax_amount: taxAmount,
+          discount_amount: newInvoiceForm.discount,
+          total_amount: totalAmount,
+          status: 'pending',
+          issue_date: new Date().toISOString(),
+          due_date: dueDate.toISOString(),
+          notes: newInvoiceForm.notes || null,
+        });
+
+      if (error) throw error;
+
+      toast({ title: 'Success', description: `Invoice ${invoiceNumber} created successfully` });
+      setNewInvoiceDialogOpen(false);
+      setNewInvoiceForm({ booking_id: '', subtotal: 0, tax_rate: 0, discount: 0, notes: '', due_days: 30 });
+      fetchInvoices();
+    } catch (error: any) {
+      console.error('Error creating invoice:', error);
+      toast({ title: 'Error', description: error.message || 'Failed to create invoice', variant: 'destructive' });
+    } finally {
+      setNewInvoiceLoading(false);
     }
   };
 
@@ -210,6 +388,16 @@ export default function AdminPayments() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Payments & Invoices</h1>
           <p className="text-muted-foreground">Track payments and manage invoices</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setNewInvoiceDialogOpen(true)}>
+            <FileText className="mr-2 h-4 w-4" />
+            Create Invoice
+          </Button>
+          <Button onClick={() => setNewPaymentDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Record Payment
+          </Button>
         </div>
       </div>
 
@@ -449,6 +637,201 @@ export default function AdminPayments() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setMarkPaidDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleMarkPaid}>Confirm Payment</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Payment Dialog */}
+      <Dialog open={newPaymentDialogOpen} onOpenChange={setNewPaymentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Record Payment</DialogTitle>
+            <DialogDescription>Record a payment for a completed or in-progress booking</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Select Booking *</Label>
+              <Select
+                value={newPaymentForm.booking_id}
+                onValueChange={(value) => {
+                  const booking = bookings.find(b => b.id === value);
+                  setNewPaymentForm({ 
+                    ...newPaymentForm, 
+                    booking_id: value,
+                    amount: booking?.final_price || booking?.estimated_price || 0
+                  });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a booking" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bookings.length === 0 ? (
+                    <SelectItem value="_empty" disabled>No bookings available</SelectItem>
+                  ) : (
+                    bookings.map((booking) => (
+                      <SelectItem key={booking.id} value={booking.id}>
+                        {booking.booking_number} - {booking.customers?.first_name} {booking.customers?.last_name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Amount ($) *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={newPaymentForm.amount}
+                onChange={(e) => setNewPaymentForm({ ...newPaymentForm, amount: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <Label>Payment Method</Label>
+              <Select
+                value={newPaymentForm.payment_method}
+                onValueChange={(value) => setNewPaymentForm({ ...newPaymentForm, payment_method: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="card">Credit/Debit Card</SelectItem>
+                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                  <SelectItem value="check">Check</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Notes</Label>
+              <Textarea
+                value={newPaymentForm.notes}
+                onChange={(e) => setNewPaymentForm({ ...newPaymentForm, notes: e.target.value })}
+                placeholder="Optional notes..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewPaymentDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreatePayment} disabled={newPaymentLoading}>
+              {newPaymentLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Record Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Invoice Dialog */}
+      <Dialog open={newInvoiceDialogOpen} onOpenChange={setNewInvoiceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Invoice</DialogTitle>
+            <DialogDescription>Create a new invoice for a booking</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Select Booking *</Label>
+              <Select
+                value={newInvoiceForm.booking_id}
+                onValueChange={(value) => {
+                  const booking = bookings.find(b => b.id === value);
+                  setNewInvoiceForm({ 
+                    ...newInvoiceForm, 
+                    booking_id: value,
+                    subtotal: booking?.final_price || booking?.estimated_price || 0
+                  });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a booking" />
+                </SelectTrigger>
+                <SelectContent>
+                  {bookings.length === 0 ? (
+                    <SelectItem value="_empty" disabled>No bookings available</SelectItem>
+                  ) : (
+                    bookings.map((booking) => (
+                      <SelectItem key={booking.id} value={booking.id}>
+                        {booking.booking_number} - {booking.customers?.first_name} {booking.customers?.last_name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label>Subtotal ($) *</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={newInvoiceForm.subtotal}
+                  onChange={(e) => setNewInvoiceForm({ ...newInvoiceForm, subtotal: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <Label>Tax Rate (%)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={newInvoiceForm.tax_rate}
+                  onChange={(e) => setNewInvoiceForm({ ...newInvoiceForm, tax_rate: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <Label>Discount ($)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={newInvoiceForm.discount}
+                  onChange={(e) => setNewInvoiceForm({ ...newInvoiceForm, discount: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <Label>Due in (days)</Label>
+                <Input
+                  type="number"
+                  value={newInvoiceForm.due_days}
+                  onChange={(e) => setNewInvoiceForm({ ...newInvoiceForm, due_days: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Notes</Label>
+              <Textarea
+                value={newInvoiceForm.notes}
+                onChange={(e) => setNewInvoiceForm({ ...newInvoiceForm, notes: e.target.value })}
+                placeholder="Invoice notes..."
+              />
+            </div>
+            <div className="p-3 bg-muted rounded-lg">
+              <div className="flex justify-between text-sm">
+                <span>Subtotal:</span>
+                <span>${newInvoiceForm.subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Tax ({newInvoiceForm.tax_rate}%):</span>
+                <span>${((newInvoiceForm.subtotal * newInvoiceForm.tax_rate) / 100).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span>Discount:</span>
+                <span>-${newInvoiceForm.discount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold border-t pt-2 mt-2">
+                <span>Total:</span>
+                <span>
+                  ${(newInvoiceForm.subtotal + (newInvoiceForm.subtotal * newInvoiceForm.tax_rate / 100) - newInvoiceForm.discount).toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewInvoiceDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateInvoice} disabled={newInvoiceLoading}>
+              {newInvoiceLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create Invoice
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
