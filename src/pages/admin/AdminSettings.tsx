@@ -36,7 +36,11 @@ interface BusinessSettings {
   business_name: string;
   email: string;
   phone: string;
-  address: string;
+  whatsapp: string;
+  address_street: string;
+  address_city: string;
+  address_state: string;
+  address_zip: string;
   operating_hours: string;
   tax_rate: number;
 }
@@ -55,7 +59,11 @@ export default function AdminSettings() {
     business_name: 'CoolFix Pro',
     email: 'support@coolfixpro.com',
     phone: '(555) 123-4567',
-    address: '123 Main Street, Miami, FL 33101',
+    whatsapp: '15551234567',
+    address_street: '123 Main Street',
+    address_city: 'Miami',
+    address_state: 'FL',
+    address_zip: '33101',
     operating_hours: 'Mon-Sat: 8AM-6PM, Sun: 10AM-4PM',
     tax_rate: 7.5,
   });
@@ -87,6 +95,21 @@ export default function AdminSettings() {
           setBusinessSettings(prev => ({ ...prev, ...(setting.value as object) }));
         } else if (setting.key === 'notifications') {
           setNotifications(prev => ({ ...prev, ...(setting.value as object) }));
+        } else if (setting.key === 'business_phone') {
+          setBusinessSettings(prev => ({ ...prev, phone: setting.value as string }));
+        } else if (setting.key === 'business_email') {
+          setBusinessSettings(prev => ({ ...prev, email: setting.value as string }));
+        } else if (setting.key === 'whatsapp_number') {
+          setBusinessSettings(prev => ({ ...prev, whatsapp: setting.value as string }));
+        } else if (setting.key === 'business_address') {
+          const addr = setting.value as { street: string; city: string; state: string; zip: string };
+          setBusinessSettings(prev => ({ 
+            ...prev, 
+            address_street: addr.street,
+            address_city: addr.city,
+            address_state: addr.state,
+            address_zip: addr.zip,
+          }));
         }
       });
     } catch (error) {
@@ -111,23 +134,44 @@ export default function AdminSettings() {
   const handleSaveBusinessSettings = async () => {
     setLoading(true);
     try {
-      const { data: existing } = await supabase
-        .from('system_settings')
-        .select('id')
-        .eq('key', 'business_info')
-        .maybeSingle();
+      // Save individual settings for use across the app
+      const settingsToSave = [
+        { key: 'business_phone', value: JSON.stringify(businessSettings.phone) },
+        { key: 'business_email', value: JSON.stringify(businessSettings.email) },
+        { key: 'whatsapp_number', value: JSON.stringify(businessSettings.whatsapp) },
+        { 
+          key: 'business_address', 
+          value: JSON.stringify({
+            street: businessSettings.address_street,
+            city: businessSettings.address_city,
+            state: businessSettings.address_state,
+            zip: businessSettings.address_zip,
+          })
+        },
+        { key: 'business_name', value: JSON.stringify(businessSettings.business_name) },
+        { key: 'business_hours', value: JSON.stringify(businessSettings.operating_hours) },
+        { key: 'tax_rate', value: JSON.stringify(businessSettings.tax_rate) },
+      ];
 
-      const jsonValue = JSON.parse(JSON.stringify(businessSettings)) as Json;
+      for (const setting of settingsToSave) {
+        const { data: existing } = await supabase
+          .from('system_settings')
+          .select('id')
+          .eq('key', setting.key)
+          .maybeSingle();
 
-      if (existing) {
-        await supabase
-          .from('system_settings')
-          .update({ value: jsonValue, updated_at: new Date().toISOString() })
-          .eq('key', 'business_info');
-      } else {
-        await supabase
-          .from('system_settings')
-          .insert([{ key: 'business_info', value: jsonValue }]);
+        const jsonValue = JSON.parse(setting.value) as Json;
+
+        if (existing) {
+          await supabase
+            .from('system_settings')
+            .update({ value: jsonValue, updated_at: new Date().toISOString() })
+            .eq('key', setting.key);
+        } else {
+          await supabase
+            .from('system_settings')
+            .insert([{ key: setting.key, value: jsonValue }]);
+        }
       }
 
       toast({ title: 'Success', description: 'Business settings saved' });
@@ -233,36 +277,72 @@ export default function AdminSettings() {
                   />
                 </div>
               </div>
-              <div>
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={businessSettings.email}
-                  onChange={(e) => setBusinessSettings({ ...businessSettings, email: e.target.value })}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    value={businessSettings.email}
+                    onChange={(e) => setBusinessSettings({ ...businessSettings, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>WhatsApp Number (with country code)</Label>
+                  <Input
+                    value={businessSettings.whatsapp}
+                    onChange={(e) => setBusinessSettings({ ...businessSettings, whatsapp: e.target.value })}
+                    placeholder="15551234567"
+                  />
+                </div>
               </div>
-              <div>
-                <Label>Address</Label>
-                <Textarea
-                  value={businessSettings.address}
-                  onChange={(e) => setBusinessSettings({ ...businessSettings, address: e.target.value })}
-                  rows={2}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label>Street Address</Label>
+                  <Input
+                    value={businessSettings.address_street}
+                    onChange={(e) => setBusinessSettings({ ...businessSettings, address_street: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>City</Label>
+                  <Input
+                    value={businessSettings.address_city}
+                    onChange={(e) => setBusinessSettings({ ...businessSettings, address_city: e.target.value })}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label>State</Label>
+                    <Input
+                      value={businessSettings.address_state}
+                      onChange={(e) => setBusinessSettings({ ...businessSettings, address_state: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>ZIP</Label>
+                    <Input
+                      value={businessSettings.address_zip}
+                      onChange={(e) => setBusinessSettings({ ...businessSettings, address_zip: e.target.value })}
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <Label>Operating Hours</Label>
-                <Input
-                  value={businessSettings.operating_hours}
-                  onChange={(e) => setBusinessSettings({ ...businessSettings, operating_hours: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Tax Rate (%)</Label>
-                <Input
-                  type="number"
-                  value={businessSettings.tax_rate}
-                  onChange={(e) => setBusinessSettings({ ...businessSettings, tax_rate: Number(e.target.value) })}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Operating Hours</Label>
+                  <Input
+                    value={businessSettings.operating_hours}
+                    onChange={(e) => setBusinessSettings({ ...businessSettings, operating_hours: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Tax Rate (%)</Label>
+                  <Input
+                    type="number"
+                    value={businessSettings.tax_rate}
+                    onChange={(e) => setBusinessSettings({ ...businessSettings, tax_rate: Number(e.target.value) })}
+                  />
+                </div>
               </div>
               <Button onClick={handleSaveBusinessSettings} disabled={loading}>
                 <Save className="mr-2 h-4 w-4" />
