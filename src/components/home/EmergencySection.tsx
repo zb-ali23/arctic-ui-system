@@ -63,9 +63,9 @@ export function EmergencySection() {
               <a href="tel:+15551234567">
                 <Button 
                   size="xl" 
-                  className="bg-accent-warm hover:bg-accent-warm/90 text-accent-warm-foreground shadow-lg shadow-accent-warm/30 text-lg px-10 py-6 h-auto"
+                  className="bg-accent-warm hover:bg-accent-warm/90 text-accent-warm-foreground shadow-lg shadow-accent-warm/30"
                 >
-                  <Phone className="h-6 w-6 mr-2" />
+                  <Phone className="h-5 w-5 mr-2" />
                   Call Now: (555) 123-4567
                 </Button>
               </a>
