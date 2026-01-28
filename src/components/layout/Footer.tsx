@@ -117,10 +117,10 @@ export function Footer() {
                 <div>
                   <p className="text-sm font-medium">Phone</p>
                   <a 
-                    href="tel:+15551234567" 
+                    href="tel:+96891234567" 
                     className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors touch-manipulation"
                   >
-                    (555) 123-4567
+                    +968 9123 4567
                   </a>
                 </div>
               </li>
@@ -129,10 +129,10 @@ export function Footer() {
                 <div>
                   <p className="text-sm font-medium">Email</p>
                   <a 
-                    href="mailto:hello@cooltech.com" 
+                    href="mailto:hello@cooltech.om" 
                     className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors touch-manipulation"
                   >
-                    hello@cooltech.com
+                    hello@cooltech.om
                   </a>
                 </div>
               </li>
@@ -141,7 +141,7 @@ export function Footer() {
                 <div>
                   <p className="text-sm font-medium">Service Area</p>
                   <p className="text-sm text-primary-foreground/70">
-                    Greater Metro Area
+                    All across Oman
                   </p>
                 </div>
               </li>
@@ -150,7 +150,7 @@ export function Footer() {
                 <div>
                   <p className="text-sm font-medium">Hours</p>
                   <p className="text-sm text-primary-foreground/70">
-                    Mon-Sat: 8AM - 8PM
+                    Sat-Thu: 8AM - 8PM
                     <br />
                     <span className="text-frost font-medium">Emergency: 24/7</span>
                   </p>

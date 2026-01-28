@@ -51,7 +51,7 @@ export function QuickContactStrip() {
               
               <div className="flex items-center gap-3">
                 <a 
-                  href="https://wa.me/15551234567" 
+                  href="https://wa.me/96891234567" 
                   target="_blank" 
                   rel="noopener noreferrer"
                 >
@@ -60,10 +60,10 @@ export function QuickContactStrip() {
                     <span className="hidden sm:inline">WhatsApp</span>
                   </Button>
                 </a>
-                <a href="tel:+15551234567">
+                <a href="tel:+96891234567">
                   <Button size="sm" variant="frost" className="gap-2">
                     <Phone className="h-4 w-4" />
-                    <span className="hidden sm:inline">(555) 123-4567</span>
+                    <span className="hidden sm:inline">+968 9123 4567</span>
                     <span className="sm:hidden">Call</span>
                   </Button>
                 </a>
