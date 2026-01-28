@@ -19,19 +19,19 @@ export interface BusinessSettings {
 }
 
 const defaultSettings: BusinessSettings = {
-  business_phone: "(555) 123-4567",
-  business_email: "info@acrepair.com",
+  business_phone: "+968 9123 4567",
+  business_email: "info@cooltech.om",
   business_address: {
-    street: "123 Main St",
-    city: "Houston",
-    state: "TX",
-    zip: "77001",
+    street: "Way 2345, Building 123",
+    city: "Muscat",
+    state: "Muscat Governorate",
+    zip: "112",
   },
-  whatsapp_number: "15551234567",
+  whatsapp_number: "96891234567",
   business_hours: {
-    weekdays: "8AM - 6PM",
-    saturday: "9AM - 4PM",
-    sunday: "Closed",
+    weekdays: "8AM - 8PM",
+    saturday: "8AM - 8PM",
+    sunday: "Closed (Friday)",
   },
 };
 

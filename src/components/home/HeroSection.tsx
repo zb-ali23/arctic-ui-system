@@ -115,9 +115,9 @@ export function HeroSection() {
                 className="w-full sm:w-auto gap-2 min-h-[52px] touch-manipulation"
                 asChild
               >
-                <a href="tel:+15551234567" aria-label="Call us at (555) 123-4567">
+                <a href="tel:+96891234567" aria-label="Call us at +968 9123 4567">
                   <Phone className="h-5 w-5" aria-hidden="true" />
-                  (555) 123-4567
+                  +968 9123 4567
                 </a>
               </Button>
             </motion.div>

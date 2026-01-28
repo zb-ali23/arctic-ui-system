@@ -60,13 +60,13 @@ export function EmergencySection() {
           {/* Large Call Button */}
           <div className="flex flex-wrap justify-center gap-4">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-              <a href="tel:+15551234567">
+              <a href="tel:+96891234567">
                 <Button 
                   size="xl" 
                   className="bg-accent-warm hover:bg-accent-warm/90 text-accent-warm-foreground shadow-lg shadow-accent-warm/30"
                 >
                   <Phone className="h-5 w-5 mr-2" />
-                  Call Now: (555) 123-4567
+                  Call Now: +968 9123 4567
                 </Button>
               </a>
             </motion.div>

@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 
 export function FloatingButtons() {
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const phoneNumber = "15551234567";
-  const whatsappMessage = encodeURIComponent("Hi! I'd like to schedule a repair service.");
+  const phoneNumber = "96891234567";
+  const whatsappMessage = encodeURIComponent("مرحبا! أريد حجز خدمة صيانة. Hi! I'd like to schedule a repair service.");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,7 +37,7 @@ export function FloatingButtons() {
             <MessageCircle className="h-5 w-5" aria-hidden="true" />
           </Button>
         </a>
-        <a href="tel:+15551234567" aria-label="Call us now">
+        <a href="tel:+96891234567" aria-label="Call us now">
           <Button
             size="icon"
             variant="cta"
@@ -90,7 +90,7 @@ export function FloatingButtons() {
         </a>
 
         {/* Phone Button */}
-        <a href="tel:+15551234567" className="group relative" aria-label="Call us now">
+        <a href="tel:+96891234567" className="group relative" aria-label="Call us now">
           <Button
             size="icon-lg"
             variant="cta"

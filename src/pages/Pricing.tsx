@@ -10,7 +10,7 @@ import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/
 const pricingPlans = [
   {
     name: "Diagnostic",
-    price: "$79",
+    price: "15 OMR",
     period: "flat rate",
     description: "Professional diagnosis of your cooling system.",
     features: [
@@ -26,7 +26,7 @@ const pricingPlans = [
   },
   {
     name: "Standard Repair",
-    price: "$149",
+    price: "35 OMR",
     period: "starting at",
     description: "Most common AC and refrigerator repairs.",
     features: [
@@ -43,7 +43,7 @@ const pricingPlans = [
   },
   {
     name: "Maintenance Plan",
-    price: "$199",
+    price: "75 OMR",
     period: "per year",
     description: "Keep your systems running efficiently.",
     features: [
@@ -61,18 +61,18 @@ const pricingPlans = [
 ];
 
 const additionalServices = [
-  { service: "AC Compressor Repair", price: "From $450" },
-  { service: "Refrigerant Recharge", price: "From $150" },
-  { service: "Thermostat Installation", price: "From $125" },
-  { service: "Ice Maker Repair", price: "From $179" },
-  { service: "Refrigerator Compressor", price: "From $399" },
-  { service: "Ductwork Repair", price: "From $200" },
-  { service: "Emergency After-Hours", price: "$0 extra" },
-  { service: "Commercial Diagnostic", price: "$149" }
+  { service: "AC Compressor Repair", price: "From 120 OMR" },
+  { service: "Refrigerant Recharge", price: "From 40 OMR" },
+  { service: "Thermostat Installation", price: "From 30 OMR" },
+  { service: "Ice Maker Repair", price: "From 45 OMR" },
+  { service: "Refrigerator Compressor", price: "From 100 OMR" },
+  { service: "Ductwork Repair", price: "From 50 OMR" },
+  { service: "Emergency After-Hours", price: "0 OMR extra" },
+  { service: "Commercial Diagnostic", price: "40 OMR" }
 ];
 
 const faqs = [
-  { q: "Is the diagnostic fee refundable?", a: "The $79 diagnostic fee is applied toward any repairs you choose to complete with us." },
+  { q: "Is the diagnostic fee refundable?", a: "The 15 OMR diagnostic fee is applied toward any repairs you choose to complete with us." },
   { q: "Are there any hidden fees?", a: "Never. We provide upfront pricing before any work begins. No surprises." },
   { q: "What's covered by the warranty?", a: "Our 90-day warranty covers both parts and labor on all repairs we perform." }
 ];
@@ -219,8 +219,10 @@ export default function Pricing() {
               <Button variant="hero-cta" size="xl" asChild>
                 <Link to="/book">Book Now <ArrowRight className="h-5 w-5" /></Link>
               </Button>
-              <Button variant="glass" size="xl">
-                <Phone className="h-5 w-5" /> (555) 123-4567
+              <Button variant="glass" size="xl" asChild>
+                <a href="tel:+96891234567">
+                  <Phone className="h-5 w-5" /> +968 9123 4567
+                </a>
               </Button>
             </div>
           </AnimatedSection>

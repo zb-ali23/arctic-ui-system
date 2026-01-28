@@ -7,10 +7,10 @@ import { FormTextarea } from "@/components/ui/form-textarea";
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
 
 const contactMethods = [
-  { icon: Phone, label: "Phone", value: "(555) 123-4567", href: "tel:+15551234567", description: "Mon-Sat 8AM-8PM" },
-  { icon: Mail, label: "Email", value: "hello@cooltech.com", href: "mailto:hello@cooltech.com", description: "Response within 1 hour" },
-  { icon: MessageCircle, label: "WhatsApp", value: "Chat with us", href: "https://wa.me/15551234567", description: "Instant messaging" },
-  { icon: Clock, label: "Emergency", value: "24/7 Available", href: "tel:+15551234567", description: "No overtime fees" }
+  { icon: Phone, label: "Phone", value: "+968 9123 4567", href: "tel:+96891234567", description: "Sat-Thu 8AM-8PM" },
+  { icon: Mail, label: "Email", value: "hello@cooltech.om", href: "mailto:hello@cooltech.om", description: "Response within 1 hour" },
+  { icon: MessageCircle, label: "WhatsApp", value: "Chat with us", href: "https://wa.me/96891234567", description: "Instant messaging" },
+  { icon: Clock, label: "Emergency", value: "24/7 Available", href: "tel:+96891234567", description: "No overtime fees" }
 ];
 
 export default function Contact() {

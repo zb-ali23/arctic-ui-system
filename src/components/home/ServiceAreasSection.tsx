@@ -3,14 +3,14 @@ import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/
 import { SectionHeader } from "@/components/ui/section-header";
 
 const serviceAreas = [
-  { city: "Downtown", zip: "10001-10010", popular: true },
-  { city: "Westside", zip: "10011-10020", popular: true },
-  { city: "Eastside", zip: "10021-10030", popular: false },
-  { city: "Northside", zip: "10031-10040", popular: true },
-  { city: "Southside", zip: "10041-10050", popular: false },
-  { city: "Suburbs", zip: "10051-10060", popular: true },
-  { city: "Industrial District", zip: "10061-10070", popular: false },
-  { city: "Business Center", zip: "10071-10080", popular: false },
+  { city: "Muscat", area: "Ruwi, Muttrah, Qurum", popular: true },
+  { city: "Seeb", area: "Al Khuwair, Mawaleh", popular: true },
+  { city: "Bawshar", area: "Al Amerat, Ghala", popular: true },
+  { city: "Salalah", area: "Southern Oman", popular: true },
+  { city: "Sohar", area: "Al Batinah North", popular: false },
+  { city: "Nizwa", area: "Ad Dakhiliyah", popular: false },
+  { city: "Sur", area: "Ash Sharqiyah", popular: false },
+  { city: "Ibri", area: "Ad Dhahirah", popular: false },
 ];
 
 export function ServiceAreasSection() {
@@ -41,7 +41,7 @@ export function ServiceAreasSection() {
                     <div className="font-medium group-hover:text-primary transition-colors">
                       {area.city}
                     </div>
-                    <div className="text-xs text-muted-foreground">{area.zip}</div>
+                    <div className="text-xs text-muted-foreground">{area.area}</div>
                     {area.popular && (
                       <span className="inline-block mt-2 text-xs bg-frost/20 text-frost px-2 py-0.5 rounded-full">
                         Popular Area
