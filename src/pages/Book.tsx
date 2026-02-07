@@ -456,92 +456,44 @@ export default function Book() {
       const serviceId = servicesData?.[0]?.id;
       
       if (!serviceId) {
-        // If no matching service found, just generate a local booking ID
         const id = `BK${Date.now().toString(36).toUpperCase()}`;
         setBookingId(id);
         setIsSubmitted(true);
         localStorage.removeItem(STORAGE_KEY);
+        setIsSubmitting(false);
         return;
       }
 
-      // Create or get customer
-      const { data: existingCustomer } = await supabase
-        .from('customers')
-        .select('id')
-        .eq('email', formData.email)
-        .single();
+      const selectedTimeSlotData = timeSlots.find(ts => ts.id === formData.timeSlot);
+      const isEmergency = formData.service.includes('emergency');
 
-      let customerId: string;
-      
-      if (existingCustomer) {
-        customerId = existingCustomer.id;
-      } else {
-        const { data: newCustomer, error: customerError } = await supabase
-          .from('customers')
-          .insert({
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            phone: formData.phone,
-            source: 'website',
-          })
-          .select()
-          .single();
-
-        if (customerError) throw customerError;
-        customerId = newCustomer.id;
-      }
-
-      // Create customer address
-      const { data: addressData, error: addressError } = await supabase
-        .from('customer_addresses')
-        .insert({
-          customer_id: customerId,
+      // Call the bookings edge function (public endpoint, uses service role)
+      const { data, error } = await supabase.functions.invoke('bookings', {
+        body: {
+          service_id: serviceId,
+          scheduled_date: formData.date,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
           street: formData.address,
-          apartment: formData.apartment || null,
+          apartment: formData.apartment || undefined,
           city: formData.city,
           state: formData.state,
           zip: formData.zip,
-          is_default: true,
-        })
-        .select()
-        .single();
-
-      if (addressError) throw addressError;
-
-      // Get time slot ID
-      const selectedTimeSlotData = timeSlots.find(ts => ts.id === formData.timeSlot);
-      
-      // Generate booking number
-      const bookingNumber = `BK${Date.now().toString(36).toUpperCase()}`;
-
-      // Determine priority based on service type
-      const isEmergency = formData.service.includes('emergency');
-      const priority = isEmergency ? 'emergency' : 'normal';
-
-      // Create booking
-      const { data: bookingData, error: bookingError } = await supabase
-        .from('bookings')
-        .insert({
-          booking_number: bookingNumber,
-          customer_id: customerId,
-          service_id: serviceId,
-          address_id: addressData.id,
-          scheduled_date: formData.date,
-          time_slot_label: selectedTimeSlotData?.label || null,
-          priority: priority as 'normal' | 'urgent' | 'emergency',
-          status: 'pending',
-          customer_notes: formData.notes || null,
-          problem_description: formData.problemDescription || null,
-          selected_issues: formData.selectedProblems.length > 0 ? formData.selectedProblems : null,
+          time_slot_label: selectedTimeSlotData?.label,
+          problem_description: formData.problemDescription || undefined,
+          selected_issues: formData.selectedProblems.length > 0 ? formData.selectedProblems : undefined,
+          customer_notes: formData.notes || undefined,
+          priority: isEmergency ? 'emergency' : 'normal',
           source: 'website',
-        })
-        .select()
-        .single();
+        },
+      });
 
-      if (bookingError) throw bookingError;
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Booking failed');
 
-      setBookingId(bookingData.booking_number);
+      setBookingId(data.booking.booking_number);
       setIsSubmitted(true);
       localStorage.removeItem(STORAGE_KEY);
       
@@ -552,6 +504,7 @@ export default function Book() {
         description: "There was an issue creating your booking. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
