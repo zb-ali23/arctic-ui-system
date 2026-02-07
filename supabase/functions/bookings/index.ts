@@ -16,7 +16,7 @@ const createBookingSchema: ValidationSchema = {
   phone: { required: true, type: 'string', minLength: 10 },
   street: { required: true, type: 'string', minLength: 1 },
   city: { required: true, type: 'string', minLength: 1 },
-  state: { required: true, type: 'string', minLength: 1 },
+  state: { required: false, type: 'string' },
   zip: { required: true, type: 'string', minLength: 5 },
 };
 
