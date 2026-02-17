@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { Phone, MessageCircle, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
 export function QuickContactStrip() {
   const [isSticky, setIsSticky] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const { quickContact } = useWebsiteContent();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,7 +17,6 @@ export function QuickContactStrip() {
       
       setIsSticky(currentScrollY > heroHeight);
       
-      // Hide on scroll down, show on scroll up
       if (currentScrollY > lastScrollY && currentScrollY > heroHeight + 200) {
         setIsVisible(false);
       } else {
@@ -29,6 +29,8 @@ export function QuickContactStrip() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  const phoneDigits = quickContact.phone.replace(/\s+/g, '');
 
   return (
     <AnimatePresence>
@@ -45,13 +47,13 @@ export function QuickContactStrip() {
               <div className="flex items-center gap-2 text-primary-foreground">
                 <AlertTriangle className="h-4 w-4 text-accent-warm animate-pulse" />
                 <span className="text-sm font-medium hidden sm:inline">
-                  24/7 Emergency Service Available
+                  {quickContact.strip_text}
                 </span>
               </div>
               
               <div className="flex items-center gap-3">
                 <a 
-                  href="https://wa.me/96891234567" 
+                  href={`https://wa.me/${quickContact.whatsapp_number}`}
                   target="_blank" 
                   rel="noopener noreferrer"
                 >
@@ -60,10 +62,10 @@ export function QuickContactStrip() {
                     <span className="hidden sm:inline">WhatsApp</span>
                   </Button>
                 </a>
-                <a href="tel:+96891234567">
+                <a href={`tel:${phoneDigits}`}>
                   <Button size="sm" variant="frost" className="gap-2">
                     <Phone className="h-4 w-4" />
-                    <span className="hidden sm:inline">+968 9123 4567</span>
+                    <span className="hidden sm:inline">{quickContact.phone}</span>
                     <span className="sm:hidden">Call</span>
                   </Button>
                 </a>

@@ -53,12 +53,29 @@ export interface FooterContent {
   copyright_text: string;
 }
 
+export interface QuickContactContent {
+  strip_text: string;
+  whatsapp_number: string;
+  phone: string;
+}
+
+export interface FinalCTAContent {
+  headline_line1: string;
+  headline_line2: string;
+  description: string;
+  cta_primary: string;
+  cta_phone: string;
+  phone_display: string;
+}
+
 export interface WebsiteContent {
   hero: HeroContent;
   stats: StatsContent;
   whyChooseUs: WhyChooseUsContent;
   emergency: EmergencyContent;
   footer: FooterContent;
+  quickContact: QuickContactContent;
+  finalCTA: FinalCTAContent;
   loading: boolean;
 }
 
@@ -114,12 +131,29 @@ const defaultFooter: FooterContent = {
   copyright_text: "CoolTech Services",
 };
 
+const defaultQuickContact: QuickContactContent = {
+  strip_text: "24/7 Emergency Service Available",
+  whatsapp_number: "96891234567",
+  phone: "+968 9123 4567",
+};
+
+const defaultFinalCTA: FinalCTAContent = {
+  headline_line1: "Don't Sweat It.",
+  headline_line2: "We've Got You Covered.",
+  description: "Join thousands of satisfied customers who trust CoolTech for all their cooling needs. Fast service, fair prices, guaranteed satisfaction.",
+  cta_primary: "Book Your Service Today",
+  cta_phone: "tel:+96891234567",
+  phone_display: "+968 9123 4567",
+};
+
 const WebsiteContentContext = createContext<WebsiteContent>({
   hero: defaultHero,
   stats: defaultStats,
   whyChooseUs: defaultWhyChooseUs,
   emergency: defaultEmergency,
   footer: defaultFooter,
+  quickContact: defaultQuickContact,
+  finalCTA: defaultFinalCTA,
   loading: true,
 });
 
@@ -129,6 +163,8 @@ export function WebsiteContentProvider({ children }: { children: ReactNode }) {
   const [whyChooseUs, setWhyChooseUs] = useState<WhyChooseUsContent>(defaultWhyChooseUs);
   const [emergency, setEmergency] = useState<EmergencyContent>(defaultEmergency);
   const [footer, setFooter] = useState<FooterContent>(defaultFooter);
+  const [quickContact, setQuickContact] = useState<QuickContactContent>(defaultQuickContact);
+  const [finalCTA, setFinalCTA] = useState<FinalCTAContent>(defaultFinalCTA);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -143,6 +179,8 @@ export function WebsiteContentProvider({ children }: { children: ReactNode }) {
             "website_why_choose_us",
             "website_emergency",
             "website_footer",
+            "website_quick_contact",
+            "website_final_cta",
           ]);
 
         if (error) throw error;
@@ -155,6 +193,8 @@ export function WebsiteContentProvider({ children }: { children: ReactNode }) {
             case "website_why_choose_us": setWhyChooseUs((prev) => ({ ...prev, ...val })); break;
             case "website_emergency": setEmergency((prev) => ({ ...prev, ...val })); break;
             case "website_footer": setFooter((prev) => ({ ...prev, ...val })); break;
+            case "website_quick_contact": setQuickContact((prev) => ({ ...prev, ...val })); break;
+            case "website_final_cta": setFinalCTA((prev) => ({ ...prev, ...val })); break;
           }
         });
       } catch (error) {
@@ -168,7 +208,7 @@ export function WebsiteContentProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <WebsiteContentContext.Provider value={{ hero, stats, whyChooseUs, emergency, footer, loading }}>
+    <WebsiteContentContext.Provider value={{ hero, stats, whyChooseUs, emergency, footer, quickContact, finalCTA, loading }}>
       {children}
     </WebsiteContentContext.Provider>
   );
