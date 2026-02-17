@@ -3,8 +3,12 @@ import { Phone, AlertTriangle, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/ui/animated-section";
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
 export function EmergencySection() {
+  const { emergency } = useWebsiteContent();
+  const phoneDigits = emergency.phone.replace(/\s+/g, '');
+
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Dark Blue Background */}
@@ -35,19 +39,18 @@ export function EmergencySection() {
           </motion.div>
 
           <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
-            24/7 Emergency
+            {emergency.title}
             <span className="text-frost"> Repair Service</span>
           </h2>
 
           <p className="text-lg text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-            AC down on the hottest day? Refrigerator failing? We're available around the clock.
-            Fast response, no overtime charges.
+            {emergency.description}
           </p>
 
           {/* Features */}
           <div className="flex flex-wrap justify-center gap-6 mb-10">
             {[
-              { icon: Clock, text: "60-Min Average Response" },
+              { icon: Clock, text: emergency.response_time },
               { icon: Phone, text: "No Overtime Fees" },
             ].map((item) => (
               <div key={item.text} className="flex items-center gap-2 text-primary-foreground/90">
@@ -60,13 +63,13 @@ export function EmergencySection() {
           {/* Large Call Button */}
           <div className="flex flex-wrap justify-center gap-4">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-              <a href="tel:+96891234567">
+              <a href={`tel:${phoneDigits}`}>
                 <Button 
                   size="xl" 
                   className="bg-accent-warm hover:bg-accent-warm/90 text-accent-warm-foreground shadow-lg shadow-accent-warm/30"
                 >
                   <Phone className="h-5 w-5 mr-2" />
-                  Call Now: +968 9123 4567
+                  {emergency.cta_text}: {emergency.phone}
                 </Button>
               </a>
             </motion.div>
