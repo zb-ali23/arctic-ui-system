@@ -1,32 +1,30 @@
 import { MapPin } from "lucide-react";
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
 import { SectionHeader } from "@/components/ui/section-header";
-
-const serviceAreas = [
-  { city: "Muscat", area: "Ruwi, Muttrah, Qurum", popular: true },
-  { city: "Seeb", area: "Al Khuwair, Mawaleh", popular: true },
-  { city: "Bawshar", area: "Al Amerat, Ghala", popular: true },
-  { city: "Salalah", area: "Southern Oman", popular: true },
-  { city: "Sohar", area: "Al Batinah North", popular: false },
-  { city: "Nizwa", area: "Ad Dakhiliyah", popular: false },
-  { city: "Sur", area: "Ash Sharqiyah", popular: false },
-  { city: "Ibri", area: "Ad Dhahirah", popular: false },
-];
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
 export function ServiceAreasSection() {
+  const { serviceAreas, links } = useWebsiteContent();
+
+  const areas = Array.from({ length: 8 }, (_, i) => ({
+    city: (serviceAreas as any)[`area_${i + 1}_city`] as string,
+    area: (serviceAreas as any)[`area_${i + 1}_detail`] as string,
+    popular: i < 4,
+  })).filter(a => a.city.trim() !== "");
+
   return (
     <section className="section bg-background-soft">
       <div className="container">
         <AnimatedSection>
           <SectionHeader 
-            badge="Coverage"
-            title="Service Areas"
-            description="We proudly serve the entire greater metro area. Check if we cover your location."
+            badge={serviceAreas.badge}
+            title={serviceAreas.title}
+            description={serviceAreas.description}
           />
         </AnimatedSection>
 
         <StaggerContainer className="grid grid-cols-2 md:grid-cols-4 gap-4" staggerDelay={0.05}>
-          {serviceAreas.map((area) => (
+          {areas.map((area) => (
             <StaggerItem key={area.city}>
               <div className={`group p-4 rounded-xl border transition-all duration-300 cursor-pointer ${
                 area.popular 
@@ -56,7 +54,13 @@ export function ServiceAreasSection() {
 
         <AnimatedSection delay={0.3} className="text-center mt-8">
           <p className="text-muted-foreground">
-            Don't see your area? <a href="tel:+15551234567" className="text-frost font-medium hover:underline">Call us</a> to confirm coverage.
+            {serviceAreas.footer_text.includes("Call us") ? (
+              <>
+                {serviceAreas.footer_text.split("Call us")[0]}
+                <a href={`tel:${links.phone_number}`} className="text-frost font-medium hover:underline">Call us</a>
+                {serviceAreas.footer_text.split("Call us")[1]}
+              </>
+            ) : serviceAreas.footer_text}
           </p>
         </AnimatedSection>
       </div>
