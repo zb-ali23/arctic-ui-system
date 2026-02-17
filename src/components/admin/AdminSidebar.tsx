@@ -22,7 +22,8 @@ import {
   UserCog,
   Key,
   Activity,
-  Crown
+  Crown,
+  Globe
 } from 'lucide-react';
 
 interface NavItem {
@@ -85,6 +86,12 @@ const navItems: NavItem[] = [
       { title: 'FAQs', href: '/admin/content/faqs' },
       { title: 'Testimonials', href: '/admin/content/testimonials' },
     ],
+  },
+  {
+    title: 'Website Content',
+    href: '/admin/website-content',
+    icon: Globe,
+    roles: ['super_admin', 'manager'],
   },
   {
     title: 'Reports',
