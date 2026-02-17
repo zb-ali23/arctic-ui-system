@@ -1,34 +1,30 @@
 import { motion } from "framer-motion";
 import { AnimatedSection } from "@/components/ui/animated-section";
-
-const brands = [
-  { name: "Carrier", logo: "C" },
-  { name: "Trane", logo: "T" },
-  { name: "Lennox", logo: "L" },
-  { name: "Goodman", logo: "G" },
-  { name: "Rheem", logo: "R" },
-  { name: "York", logo: "Y" },
-  { name: "Samsung", logo: "S" },
-  { name: "LG", logo: "LG" },
-  { name: "Whirlpool", logo: "W" },
-  { name: "GE", logo: "GE" },
-  { name: "Frigidaire", logo: "F" },
-  { name: "Maytag", logo: "M" },
-];
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
 export function BrandsSection() {
+  const { brands: brandsContent } = useWebsiteContent();
+
+  const brands = brandsContent.brands_list
+    .split(",")
+    .map(b => b.trim())
+    .filter(Boolean)
+    .map(name => ({
+      name,
+      logo: name.length <= 2 ? name : name.slice(0, 1).toUpperCase(),
+    }));
+
   return (
     <section className="py-16 bg-background-soft border-y border-border overflow-hidden">
       <div className="container">
         <AnimatedSection className="text-center mb-10">
           <span className="inline-block rounded-full bg-frost/10 px-4 py-1.5 text-sm font-medium text-frost mb-4">
-            All Major Brands
+            {brandsContent.badge}
           </span>
-          <h2 className="text-2xl md:text-3xl font-bold">Brands We Service</h2>
+          <h2 className="text-2xl md:text-3xl font-bold">{brandsContent.title}</h2>
         </AnimatedSection>
       </div>
 
-      {/* Auto-scrolling Logo Strip */}
       <div className="relative">
         <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background-soft to-transparent z-10" />
         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background-soft to-transparent z-10" />
@@ -45,7 +41,6 @@ export function BrandsSection() {
           }}
           className="flex gap-8"
         >
-          {/* Double the brands for seamless loop */}
           {[...brands, ...brands].map((brand, index) => (
             <div
               key={`${brand.name}-${index}`}

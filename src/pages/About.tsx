@@ -1,29 +1,16 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
-  Users, 
-  Award, 
-  Clock, 
-  ShieldCheck,
-  Target,
-  Heart,
-  Lightbulb,
-  Handshake,
-  ArrowRight,
-  CheckCircle
+  Users, Award, Clock, ShieldCheck, Target, Heart, Lightbulb, Handshake, ArrowRight, CheckCircle
 } from "lucide-react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
 import { AnimatedCounter } from "@/hooks/use-counter";
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
-const values = [
-  { icon: Target, title: "Excellence", description: "We strive for excellence in every repair, ensuring your systems work like new." },
-  { icon: Heart, title: "Customer First", description: "Your satisfaction is our priority. We treat every customer like family." },
-  { icon: ShieldCheck, title: "Integrity", description: "Honest diagnostics, fair pricing, and transparent communication every time." },
-  { icon: Lightbulb, title: "Innovation", description: "We stay current with the latest technologies and repair techniques." }
-];
+const valueIcons = [Target, Heart, ShieldCheck, Lightbulb];
 
 const team = [
   { name: "Michael Torres", role: "Founder & Lead Technician", bio: "25+ years HVAC experience. EPA & NATE certified.", initial: "MT" },
@@ -40,16 +27,22 @@ const milestones = [
   { year: "2024", title: "Award Winning", description: "Named Best Local HVAC Service by Metro Magazine." }
 ];
 
-const certifications = [
-  "EPA Certified", "NATE Certified", "BBB A+ Rating", "Licensed & Bonded", "Fully Insured", "Factory Authorized"
-];
-
 export default function About() {
+  const { aboutPage } = useWebsiteContent();
+
+  const certifications = aboutPage.certifications.split(",").map(c => c.trim()).filter(Boolean);
+
+  const values = Array.from({ length: 4 }, (_, i) => ({
+    icon: valueIcons[i],
+    title: (aboutPage as any)[`value_${i + 1}_title`] as string,
+    description: (aboutPage as any)[`value_${i + 1}_desc`] as string,
+  }));
+
   return (
     <MainLayout>
       <PageHeader
-        title="About CoolTech"
-        description="Trusted cooling experts serving our community since 2010."
+        title={aboutPage.page_title}
+        description={aboutPage.page_description}
         breadcrumbs={[{ label: "About Us" }]}
         variant="hero"
       />
@@ -60,27 +53,15 @@ export default function About() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <AnimatedSection>
               <span className="inline-block rounded-full bg-frost/10 px-4 py-1.5 text-sm font-medium text-frost mb-4">
-                Our Story
+                {aboutPage.story_badge}
               </span>
               <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Built on Trust, Driven by Excellence
+                {aboutPage.story_title}
               </h2>
               <div className="space-y-4 text-muted-foreground">
-                <p>
-                  CoolTech Services was founded in 2010 by Michael Torres, a veteran 
-                  HVAC technician who saw an opportunity to bring honest, reliable cooling 
-                  repair services to our community.
-                </p>
-                <p>
-                  What started as a one-man operation working out of a single service van 
-                  has grown into a trusted team of certified professionals serving thousands 
-                  of homes and businesses across the greater metro area.
-                </p>
-                <p>
-                  Our commitment to quality workmanship, fair pricing, and exceptional 
-                  customer service has earned us thousands of 5-star reviews and a reputation 
-                  as the go-to cooling experts.
-                </p>
+                <p>{aboutPage.story_paragraph_1}</p>
+                <p>{aboutPage.story_paragraph_2}</p>
+                <p>{aboutPage.story_paragraph_3}</p>
               </div>
               <div className="flex flex-wrap gap-3 mt-8">
                 {certifications.map((cert) => (
@@ -119,9 +100,9 @@ export default function About() {
         <div className="container">
           <AnimatedSection className="text-center mb-12">
             <span className="inline-block rounded-full bg-frost/10 px-4 py-1.5 text-sm font-medium text-frost mb-4">
-              Our Journey
+              {aboutPage.milestone_badge}
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold">Company Milestones</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">{aboutPage.milestone_title}</h2>
           </AnimatedSection>
 
           <div className="relative max-w-3xl mx-auto">
@@ -153,9 +134,9 @@ export default function About() {
         <div className="container">
           <AnimatedSection className="text-center mb-12">
             <span className="inline-block rounded-full bg-frost/10 px-4 py-1.5 text-sm font-medium text-frost mb-4">
-              Our Values
+              {aboutPage.values_badge}
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold">What We Stand For</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">{aboutPage.values_title}</h2>
           </AnimatedSection>
           
           <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-6" staggerDelay={0.1}>
@@ -212,10 +193,10 @@ export default function About() {
         <div className="container text-center">
           <AnimatedSection>
             <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-              Ready to Experience the CoolTech Difference?
+              {aboutPage.cta_title}
             </h2>
             <p className="text-primary-foreground/80 text-lg mb-8 max-w-2xl mx-auto">
-              Join thousands of satisfied customers who trust CoolTech.
+              {aboutPage.cta_description}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button variant="hero-cta" size="xl" asChild>

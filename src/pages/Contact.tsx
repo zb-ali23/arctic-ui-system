@@ -5,18 +5,21 @@ import { Button } from "@/components/ui/button";
 import { FormInput } from "@/components/ui/form-input";
 import { FormTextarea } from "@/components/ui/form-textarea";
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
-
-const contactMethods = [
-  { icon: Phone, label: "Phone", value: "+968 9123 4567", href: "tel:+96891234567", description: "Sat-Thu 8AM-8PM" },
-  { icon: Mail, label: "Email", value: "hello@cooltech.om", href: "mailto:hello@cooltech.om", description: "Response within 1 hour" },
-  { icon: MessageCircle, label: "WhatsApp", value: "Chat with us", href: "https://wa.me/96891234567", description: "Instant messaging" },
-  { icon: Clock, label: "Emergency", value: "24/7 Available", href: "tel:+96891234567", description: "No overtime fees" }
-];
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
 export default function Contact() {
+  const { contactPage, links } = useWebsiteContent();
+
+  const contactMethods = [
+    { icon: Phone, label: "Phone", value: contactPage.phone_value, href: `tel:${links.phone_number}`, description: contactPage.phone_hours },
+    { icon: Mail, label: "Email", value: contactPage.email_value, href: `mailto:${contactPage.email_value}`, description: contactPage.email_response },
+    { icon: MessageCircle, label: "WhatsApp", value: contactPage.whatsapp_text, href: `https://wa.me/${links.whatsapp_number}`, description: "Instant messaging" },
+    { icon: Clock, label: "Emergency", value: contactPage.emergency_text, href: `tel:${links.phone_number}`, description: "No overtime fees" }
+  ];
+
   return (
     <MainLayout>
-      <PageHeader title="Contact Us" description="Get in touch with our team. We're here to help." breadcrumbs={[{ label: "Contact" }]} variant="hero" />
+      <PageHeader title={contactPage.page_title} description={contactPage.page_description} breadcrumbs={[{ label: "Contact" }]} variant="hero" />
 
       <section className="section bg-background">
         <div className="container">
@@ -43,8 +46,8 @@ export default function Contact() {
 
                 <div className="mt-8 p-5 rounded-xl bg-primary text-primary-foreground">
                   <MapPin className="h-6 w-6 text-frost mb-3" />
-                  <h4 className="font-semibold mb-1">Service Area</h4>
-                  <p className="text-sm text-primary-foreground/80">Greater Metro Area & surrounding suburbs within 30 miles.</p>
+                  <h4 className="font-semibold mb-1">{contactPage.service_area_title}</h4>
+                  <p className="text-sm text-primary-foreground/80">{contactPage.service_area_description}</p>
                 </div>
               </AnimatedSection>
             </div>
@@ -52,7 +55,7 @@ export default function Contact() {
             <div className="lg:col-span-3">
               <AnimatedSection direction="right">
                 <div className="rounded-2xl border border-border bg-card p-8 shadow-lg">
-                  <h3 className="text-xl font-bold mb-6">Send Us a Message</h3>
+                  <h3 className="text-xl font-bold mb-6">{contactPage.form_title}</h3>
                   <form className="space-y-5">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <FormInput label="First Name" placeholder="John" />

@@ -1,77 +1,35 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { 
-  Wind, 
-  Thermometer, 
-  Snowflake, 
-  Clock, 
-  Wrench, 
-  ShieldCheck,
-  ArrowRight
+  Wind, Thermometer, Snowflake, Clock, Wrench, ShieldCheck, ArrowRight
 } from "lucide-react";
 import { AnimatedSection, StaggerContainer, StaggerItem, ScaleOnHover } from "@/components/ui/animated-section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
-const services = [
-  {
-    icon: Wind,
-    title: "AC Repair",
-    description: "Expert diagnosis and repair for all AC brands. Cooling issues, compressor problems, and more.",
-    category: "AC",
-    href: "/services/ac-repair",
-    color: "frost"
-  },
-  {
-    icon: Thermometer,
-    title: "Refrigerator Repair",
-    description: "Complete fridge and freezer repair. Ice makers, cooling issues, and compressor fixes.",
-    category: "Refrigerator",
-    href: "/services/refrigerator-repair",
-    color: "accent"
-  },
-  {
-    icon: Snowflake,
-    title: "AC Maintenance",
-    description: "Preventive maintenance to keep your AC running efficiently all season long.",
-    category: "AC",
-    href: "/services/maintenance",
-    color: "frost"
-  },
-  {
-    icon: Clock,
-    title: "Emergency Service",
-    description: "24/7 emergency repairs when you need help fast. No overtime charges.",
-    category: "Both",
-    href: "/services/emergency",
-    color: "accent-warm"
-  },
-  {
-    icon: Wrench,
-    title: "Installation",
-    description: "Professional installation of new AC units and refrigerators with warranty.",
-    category: "Both",
-    href: "/services/installation",
-    color: "frost"
-  },
-  {
-    icon: ShieldCheck,
-    title: "Warranty Service",
-    description: "Authorized warranty repairs for major brands. Factory-trained technicians.",
-    category: "Both",
-    href: "/services/warranty",
-    color: "accent"
-  },
-];
+const icons = [Wind, Thermometer, Snowflake, Clock, Wrench, ShieldCheck];
+const hrefs = ["/services/ac-repair", "/services/refrigerator-repair", "/services/maintenance", "/services/emergency", "/services/installation", "/services/warranty"];
+const colors = ["frost", "accent", "frost", "accent-warm", "frost", "accent"];
 
 export function ServicesSection() {
+  const { servicesSection } = useWebsiteContent();
+
+  const services = Array.from({ length: 6 }, (_, i) => ({
+    icon: icons[i],
+    title: (servicesSection as any)[`service_${i + 1}_title`] as string,
+    description: (servicesSection as any)[`service_${i + 1}_desc`] as string,
+    category: (servicesSection as any)[`service_${i + 1}_category`] as string,
+    href: hrefs[i],
+    color: colors[i],
+  }));
+
   return (
     <section className="section bg-background">
       <div className="container">
         <AnimatedSection>
           <SectionHeader 
-            badge="Our Services"
-            title="Professional Cooling Solutions"
-            description="From quick fixes to complete overhauls, we handle all your AC and refrigerator needs with expertise."
+            badge={servicesSection.badge}
+            title={servicesSection.title}
+            description={servicesSection.description}
           />
         </AnimatedSection>
 
@@ -81,7 +39,6 @@ export function ServicesSection() {
               <ScaleOnHover>
                 <Link to={service.href} className="block h-full">
                   <div className="group h-full rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-xl hover:border-frost/30 transition-all duration-300">
-                    {/* Category Tag */}
                     <div className="flex items-center justify-between mb-4">
                       <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
                         service.category === "AC" 
@@ -95,7 +52,6 @@ export function ServicesSection() {
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </div>
 
-                    {/* Icon */}
                     <div className={`mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl transition-all duration-300 ${
                       service.color === "frost" 
                         ? "bg-frost/10 text-frost group-hover:bg-frost group-hover:text-frost-foreground" 
@@ -106,7 +62,6 @@ export function ServicesSection() {
                       <service.icon className="h-7 w-7" strokeWidth={1.5} />
                     </div>
 
-                    {/* Content */}
                     <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
                       {service.title}
                     </h3>
@@ -125,7 +80,7 @@ export function ServicesSection() {
             to="/services"
             className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
           >
-            View All Services
+            {servicesSection.view_all_text}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </AnimatedSection>
