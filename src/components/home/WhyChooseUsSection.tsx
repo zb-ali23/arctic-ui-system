@@ -8,53 +8,32 @@ import {
 } from "lucide-react";
 import { AnimatedSection, StaggerContainer, StaggerItem } from "@/components/ui/animated-section";
 import { SectionHeader } from "@/components/ui/section-header";
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
-const features = [
-  {
-    icon: Clock,
-    title: "Same-Day Service",
-    description: "We understand urgency. Most repairs completed within hours of your call."
-  },
-  {
-    icon: ShieldCheck,
-    title: "Licensed & Insured",
-    description: "Fully licensed, bonded, and insured for your complete peace of mind."
-  },
-  {
-    icon: Award,
-    title: "90-Day Warranty",
-    description: "All repairs backed by our industry-leading 90-day parts and labor warranty."
-  },
-  {
-    icon: DollarSign,
-    title: "Upfront Pricing",
-    description: "No surprises. Get a complete quote before any work begins."
-  },
-  {
-    icon: Wrench,
-    title: "Expert Technicians",
-    description: "Factory-trained professionals with 10+ years average experience."
-  },
-  {
-    icon: Headphones,
-    title: "24/7 Support",
-    description: "Round-the-clock customer support and emergency service availability."
-  }
-];
+const featureIcons = [Clock, ShieldCheck, Award, DollarSign, Wrench, Headphones];
 
 export function WhyChooseUsSection() {
+  const { whyChooseUs } = useWebsiteContent();
+
+  const features = [
+    { icon: featureIcons[0], title: whyChooseUs.feature_1_title, description: whyChooseUs.feature_1_desc },
+    { icon: featureIcons[1], title: whyChooseUs.feature_2_title, description: whyChooseUs.feature_2_desc },
+    { icon: featureIcons[2], title: whyChooseUs.feature_3_title, description: whyChooseUs.feature_3_desc },
+    { icon: featureIcons[3], title: whyChooseUs.feature_4_title, description: whyChooseUs.feature_4_desc },
+  ];
+
   return (
     <section className="section bg-background-soft">
       <div className="container">
         <AnimatedSection>
           <SectionHeader 
             badge="Why Choose Us"
-            title="The CoolTech Difference"
-            description="We're not just another repair service. Here's why thousands of customers trust us."
+            title={whyChooseUs.section_title}
+            description={whyChooseUs.section_description}
           />
         </AnimatedSection>
 
-        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-8" staggerDelay={0.1}>
+        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-2 gap-8" staggerDelay={0.1}>
           {features.map((feature) => (
             <StaggerItem key={feature.title}>
               <div className="group flex gap-4 p-6 rounded-2xl bg-card border border-border hover:shadow-lg hover:border-frost/20 transition-all duration-300">
