@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Save, RefreshCw, Globe, BarChart3, MessageSquare, Shield, Clock, Phone, Megaphone } from 'lucide-react';
+import { Save, RefreshCw, Globe, BarChart3, MessageSquare, Shield, Clock, Phone, Megaphone, Link2 } from 'lucide-react';
 
 interface HeroContent {
   badge_text: string;
@@ -77,6 +77,18 @@ interface FinalCTAContent {
   cta_primary: string;
   cta_phone: string;
   phone_display: string;
+}
+
+interface LinksContent {
+  whatsapp_number: string;
+  phone_number: string;
+  phone_display: string;
+  facebook_url: string;
+  instagram_url: string;
+  twitter_url: string;
+  linkedin_url: string;
+  google_maps_url: string;
+  email: string;
 }
 
 const defaultHero: HeroContent = {
@@ -148,6 +160,18 @@ const defaultFinalCTA: FinalCTAContent = {
   phone_display: '+968 9123 4567',
 };
 
+const defaultLinks: LinksContent = {
+  whatsapp_number: '96891234567',
+  phone_number: '+96891234567',
+  phone_display: '+968 9123 4567',
+  facebook_url: '',
+  instagram_url: '',
+  twitter_url: '',
+  linkedin_url: '',
+  google_maps_url: '',
+  email: 'info@cooltech.com',
+};
+
 export default function AdminWebsiteContent() {
   const [hero, setHero] = useState<HeroContent>(defaultHero);
   const [stats, setStats] = useState<StatsContent>(defaultStats);
@@ -156,6 +180,7 @@ export default function AdminWebsiteContent() {
   const [footer, setFooter] = useState<FooterContent>(defaultFooter);
   const [quickContact, setQuickContact] = useState<QuickContactContent>(defaultQuickContact);
   const [finalCTA, setFinalCTA] = useState<FinalCTAContent>(defaultFinalCTA);
+  const [links, setLinks] = useState<LinksContent>(defaultLinks);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
   const { toast } = useToast();
@@ -168,7 +193,7 @@ export default function AdminWebsiteContent() {
       const { data, error } = await supabase
         .from('system_settings')
         .select('key, value')
-        .in('key', ['website_hero', 'website_stats', 'website_why_choose_us', 'website_emergency', 'website_footer', 'website_quick_contact', 'website_final_cta']);
+        .in('key', ['website_hero', 'website_stats', 'website_why_choose_us', 'website_emergency', 'website_footer', 'website_quick_contact', 'website_final_cta', 'website_links']);
 
       if (error) throw error;
 
@@ -182,6 +207,7 @@ export default function AdminWebsiteContent() {
           case 'website_footer': setFooter(prev => ({ ...prev, ...val })); break;
           case 'website_quick_contact': setQuickContact(prev => ({ ...prev, ...val })); break;
           case 'website_final_cta': setFinalCTA(prev => ({ ...prev, ...val })); break;
+          case 'website_links': setLinks(prev => ({ ...prev, ...val })); break;
         }
       });
     } catch (error) {
@@ -249,6 +275,7 @@ export default function AdminWebsiteContent() {
           <TabsTrigger value="quick-contact"><Phone className="mr-2 h-4 w-4" />Quick Contact</TabsTrigger>
           <TabsTrigger value="final-cta"><Megaphone className="mr-2 h-4 w-4" />Final CTA</TabsTrigger>
           <TabsTrigger value="footer"><MessageSquare className="mr-2 h-4 w-4" />Footer</TabsTrigger>
+          <TabsTrigger value="links"><Link2 className="mr-2 h-4 w-4" />Links</TabsTrigger>
         </TabsList>
 
         {/* Hero Section */}
@@ -421,6 +448,50 @@ export default function AdminWebsiteContent() {
               </div>
               <Button onClick={() => saveSection('website_footer', footer)} disabled={saving === 'website_footer'}>
                 <Save className="mr-2 h-4 w-4" />{saving === 'website_footer' ? 'Saving...' : 'Save Footer Content'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Links */}
+        <TabsContent value="links" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Links</CardTitle>
+              <CardDescription>Manage all WhatsApp, phone, email, and social media links used across the website</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Contact Links</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField label="WhatsApp Number (digits only, e.g. 923402841525)" value={links.whatsapp_number} onChange={(v) => setLinks({ ...links, whatsapp_number: v })} />
+                  <InputField label="Phone Number (with country code, e.g. +92 3402841525)" value={links.phone_display} onChange={(v) => setLinks({ ...links, phone_display: v })} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField label="Phone Link (e.g. tel:+923402841525)" value={links.phone_number} onChange={(v) => setLinks({ ...links, phone_number: v })} />
+                  <InputField label="Email Address" value={links.email} onChange={(v) => setLinks({ ...links, email: v })} />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Social Media Links</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField label="Facebook URL" value={links.facebook_url} onChange={(v) => setLinks({ ...links, facebook_url: v })} />
+                  <InputField label="Instagram URL" value={links.instagram_url} onChange={(v) => setLinks({ ...links, instagram_url: v })} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <InputField label="Twitter / X URL" value={links.twitter_url} onChange={(v) => setLinks({ ...links, twitter_url: v })} />
+                  <InputField label="LinkedIn URL" value={links.linkedin_url} onChange={(v) => setLinks({ ...links, linkedin_url: v })} />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Other Links</h3>
+                <InputField label="Google Maps URL" value={links.google_maps_url} onChange={(v) => setLinks({ ...links, google_maps_url: v })} />
+              </div>
+
+              <Button onClick={() => saveSection('website_links', links)} disabled={saving === 'website_links'}>
+                <Save className="mr-2 h-4 w-4" />{saving === 'website_links' ? 'Saving...' : 'Save All Links'}
               </Button>
             </CardContent>
           </Card>

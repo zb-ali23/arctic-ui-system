@@ -6,9 +6,8 @@ import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
 export function FloatingButtons() {
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const { quickContact } = useWebsiteContent();
+  const { links } = useWebsiteContent();
   const whatsappMessage = encodeURIComponent("مرحبا! أريد حجز خدمة صيانة. Hi! I'd like to schedule a repair service.");
-  const phoneDigits = quickContact.phone.replace(/\s+/g, '');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,7 +26,7 @@ export function FloatingButtons() {
       {/* Mobile Floating Buttons */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 md:hidden">
         <a
-          href={`https://wa.me/${quickContact.whatsapp_number}?text=${whatsappMessage}`}
+          href={`https://wa.me/${links.whatsapp_number}?text=${whatsappMessage}`}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat on WhatsApp"
@@ -36,7 +35,7 @@ export function FloatingButtons() {
             <MessageCircle className="h-5 w-5" aria-hidden="true" />
           </Button>
         </a>
-        <a href={`tel:${phoneDigits}`} aria-label="Call us now">
+        <a href={links.phone_number} aria-label="Call us now">
           <Button size="icon" variant="cta" className="h-12 w-12 rounded-full shadow-lg touch-manipulation">
             <Phone className="h-5 w-5" aria-hidden="true" />
           </Button>
@@ -55,7 +54,7 @@ export function FloatingButtons() {
       {/* Desktop Floating Buttons */}
       <div className="fixed bottom-6 right-6 z-40 hidden md:flex flex-col gap-3">
         <a
-          href={`https://wa.me/${quickContact.whatsapp_number}?text=${whatsappMessage}`}
+          href={`https://wa.me/${links.whatsapp_number}?text=${whatsappMessage}`}
           target="_blank"
           rel="noopener noreferrer"
           className="group relative"
@@ -69,7 +68,7 @@ export function FloatingButtons() {
           </span>
         </a>
 
-        <a href={`tel:${phoneDigits}`} className="group relative" aria-label="Call us now">
+        <a href={links.phone_number} className="group relative" aria-label="Call us now">
           <Button size="icon-lg" variant="cta" className="rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 touch-manipulation">
             <Phone className="h-6 w-6" aria-hidden="true" />
           </Button>

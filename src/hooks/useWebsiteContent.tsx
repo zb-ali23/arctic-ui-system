@@ -55,6 +55,18 @@ export interface FooterContent {
   phone_link: string;
 }
 
+export interface LinksContent {
+  whatsapp_number: string;
+  phone_number: string;
+  phone_display: string;
+  facebook_url: string;
+  instagram_url: string;
+  twitter_url: string;
+  linkedin_url: string;
+  google_maps_url: string;
+  email: string;
+}
+
 export interface QuickContactContent {
   strip_text: string;
   whatsapp_number: string;
@@ -78,6 +90,7 @@ export interface WebsiteContent {
   footer: FooterContent;
   quickContact: QuickContactContent;
   finalCTA: FinalCTAContent;
+  links: LinksContent;
   loading: boolean;
 }
 
@@ -150,6 +163,18 @@ const defaultFinalCTA: FinalCTAContent = {
   phone_display: "+968 9123 4567",
 };
 
+const defaultLinks: LinksContent = {
+  whatsapp_number: "96891234567",
+  phone_number: "+96891234567",
+  phone_display: "+968 9123 4567",
+  facebook_url: "",
+  instagram_url: "",
+  twitter_url: "",
+  linkedin_url: "",
+  google_maps_url: "",
+  email: "info@cooltech.com",
+};
+
 const WebsiteContentContext = createContext<WebsiteContent>({
   hero: defaultHero,
   stats: defaultStats,
@@ -158,6 +183,7 @@ const WebsiteContentContext = createContext<WebsiteContent>({
   footer: defaultFooter,
   quickContact: defaultQuickContact,
   finalCTA: defaultFinalCTA,
+  links: defaultLinks,
   loading: true,
 });
 
@@ -169,6 +195,7 @@ export function WebsiteContentProvider({ children }: { children: ReactNode }) {
   const [footer, setFooter] = useState<FooterContent>(defaultFooter);
   const [quickContact, setQuickContact] = useState<QuickContactContent>(defaultQuickContact);
   const [finalCTA, setFinalCTA] = useState<FinalCTAContent>(defaultFinalCTA);
+  const [links, setLinks] = useState<LinksContent>(defaultLinks);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -185,6 +212,7 @@ export function WebsiteContentProvider({ children }: { children: ReactNode }) {
             "website_footer",
             "website_quick_contact",
             "website_final_cta",
+            "website_links",
           ]);
 
         if (error) throw error;
@@ -199,6 +227,7 @@ export function WebsiteContentProvider({ children }: { children: ReactNode }) {
             case "website_footer": setFooter((prev) => ({ ...prev, ...val })); break;
             case "website_quick_contact": setQuickContact((prev) => ({ ...prev, ...val })); break;
             case "website_final_cta": setFinalCTA((prev) => ({ ...prev, ...val })); break;
+            case "website_links": setLinks((prev) => ({ ...prev, ...val })); break;
           }
         });
       } catch (error) {
@@ -212,7 +241,7 @@ export function WebsiteContentProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <WebsiteContentContext.Provider value={{ hero, stats, whyChooseUs, emergency, footer, quickContact, finalCTA, loading }}>
+    <WebsiteContentContext.Provider value={{ hero, stats, whyChooseUs, emergency, footer, quickContact, finalCTA, links, loading }}>
       {children}
     </WebsiteContentContext.Provider>
   );

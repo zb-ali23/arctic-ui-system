@@ -34,16 +34,16 @@ const quickLinks = [
   { title: "Book Service", href: "/book" },
 ];
 
-const socialLinks = [
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
-];
-
 export function Footer() {
-  const { footer } = useWebsiteContent();
+  const { footer, links } = useWebsiteContent();
   const { settings } = useBusinessSettings();
+
+  const socialLinks = [
+    { icon: Facebook, href: links.facebook_url, label: "Facebook" },
+    { icon: Instagram, href: links.instagram_url, label: "Instagram" },
+    { icon: Twitter, href: links.twitter_url, label: "Twitter" },
+    { icon: Linkedin, href: links.linkedin_url, label: "LinkedIn" },
+  ].filter(s => s.href);
 
   return (
     <footer className="bg-primary text-primary-foreground pb-24 md:pb-0" role="contentinfo" aria-label="Site footer">
