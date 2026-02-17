@@ -11,7 +11,8 @@ import {
   Linkedin,
   ShieldCheck,
   Award,
-  BadgeCheck
+  BadgeCheck,
+  MessageCircle
 } from "lucide-react";
 import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 import { useBusinessSettings } from "@/hooks/useBusinessSettings";
@@ -148,6 +149,17 @@ export function Footer() {
                   </p>
                 </div>
               </li>
+              {footer.whatsapp_link && (
+                <li className="flex items-start gap-3">
+                  <MessageCircle className="h-5 w-5 text-frost shrink-0 mt-0.5" aria-hidden="true" />
+                  <div>
+                    <p className="text-sm font-medium">WhatsApp</p>
+                    <a href={footer.whatsapp_link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary-foreground/70 hover:text-primary-foreground transition-colors touch-manipulation">
+                      Chat with us
+                    </a>
+                  </div>
+                </li>
+              )}
             </ul>
           </address>
         </div>
