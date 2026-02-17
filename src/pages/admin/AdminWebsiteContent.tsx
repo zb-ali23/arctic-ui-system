@@ -60,6 +60,8 @@ interface EmergencyContent {
 interface FooterContent {
   company_description: string;
   copyright_text: string;
+  whatsapp_link: string;
+  phone_link: string;
 }
 
 interface QuickContactContent {
@@ -127,6 +129,8 @@ const defaultEmergency: EmergencyContent = {
 const defaultFooter: FooterContent = {
   company_description: 'Professional AC & refrigerator repair services. Licensed, insured, and trusted by thousands of customers.',
   copyright_text: '© 2024 CoolFix Pro. All rights reserved.',
+  whatsapp_link: 'https://wa.me/96891234567',
+  phone_link: 'tel:+96891234567',
 };
 
 const defaultQuickContact: QuickContactContent = {
@@ -406,11 +410,15 @@ export default function AdminWebsiteContent() {
           <Card>
             <CardHeader>
               <CardTitle>Footer Content</CardTitle>
-              <CardDescription>Footer text and copyright information</CardDescription>
+              <CardDescription>Footer text, copyright, and contact links</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <InputField label="Company Description" value={footer.company_description} onChange={(v) => setFooter({ ...footer, company_description: v })} multiline />
               <InputField label="Copyright Text" value={footer.copyright_text} onChange={(v) => setFooter({ ...footer, copyright_text: v })} />
+              <div className="grid grid-cols-2 gap-4">
+                <InputField label="WhatsApp Link (e.g. https://wa.me/96891234567)" value={footer.whatsapp_link} onChange={(v) => setFooter({ ...footer, whatsapp_link: v })} />
+                <InputField label="Phone Link (e.g. tel:+96891234567)" value={footer.phone_link} onChange={(v) => setFooter({ ...footer, phone_link: v })} />
+              </div>
               <Button onClick={() => saveSection('website_footer', footer)} disabled={saving === 'website_footer'}>
                 <Save className="mr-2 h-4 w-4" />{saving === 'website_footer' ? 'Saving...' : 'Save Footer Content'}
               </Button>

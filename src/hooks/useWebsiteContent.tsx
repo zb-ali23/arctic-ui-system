@@ -51,6 +51,8 @@ export interface EmergencyContent {
 export interface FooterContent {
   company_description: string;
   copyright_text: string;
+  whatsapp_link: string;
+  phone_link: string;
 }
 
 export interface QuickContactContent {
@@ -129,6 +131,8 @@ const defaultEmergency: EmergencyContent = {
 const defaultFooter: FooterContent = {
   company_description: "Professional AC and refrigerator repair services. Fast, reliable, and affordable cooling solutions for homes and businesses since 2010.",
   copyright_text: "CoolTech Services",
+  whatsapp_link: "https://wa.me/96891234567",
+  phone_link: "tel:+96891234567",
 };
 
 const defaultQuickContact: QuickContactContent = {
