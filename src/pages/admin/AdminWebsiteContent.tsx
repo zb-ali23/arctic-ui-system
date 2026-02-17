@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Save, RefreshCw, Globe, BarChart3, MessageSquare, Shield, Clock } from 'lucide-react';
+import { Save, RefreshCw, Globe, BarChart3, MessageSquare, Shield, Clock, Phone, Megaphone } from 'lucide-react';
 
 interface HeroContent {
   badge_text: string;
@@ -60,6 +60,21 @@ interface EmergencyContent {
 interface FooterContent {
   company_description: string;
   copyright_text: string;
+}
+
+interface QuickContactContent {
+  strip_text: string;
+  whatsapp_number: string;
+  phone: string;
+}
+
+interface FinalCTAContent {
+  headline_line1: string;
+  headline_line2: string;
+  description: string;
+  cta_primary: string;
+  cta_phone: string;
+  phone_display: string;
 }
 
 const defaultHero: HeroContent = {
@@ -114,7 +129,20 @@ const defaultFooter: FooterContent = {
   copyright_text: '© 2024 CoolFix Pro. All rights reserved.',
 };
 
-type SectionKey = 'hero' | 'stats' | 'why_choose_us' | 'emergency' | 'footer';
+const defaultQuickContact: QuickContactContent = {
+  strip_text: '24/7 Emergency Service Available',
+  whatsapp_number: '96891234567',
+  phone: '+968 9123 4567',
+};
+
+const defaultFinalCTA: FinalCTAContent = {
+  headline_line1: "Don't Sweat It.",
+  headline_line2: "We've Got You Covered.",
+  description: 'Join thousands of satisfied customers who trust CoolTech for all their cooling needs. Fast service, fair prices, guaranteed satisfaction.',
+  cta_primary: 'Book Your Service Today',
+  cta_phone: 'tel:+96891234567',
+  phone_display: '+968 9123 4567',
+};
 
 export default function AdminWebsiteContent() {
   const [hero, setHero] = useState<HeroContent>(defaultHero);
@@ -122,6 +150,8 @@ export default function AdminWebsiteContent() {
   const [whyChooseUs, setWhyChooseUs] = useState<WhyChooseUsContent>(defaultWhyChooseUs);
   const [emergency, setEmergency] = useState<EmergencyContent>(defaultEmergency);
   const [footer, setFooter] = useState<FooterContent>(defaultFooter);
+  const [quickContact, setQuickContact] = useState<QuickContactContent>(defaultQuickContact);
+  const [finalCTA, setFinalCTA] = useState<FinalCTAContent>(defaultFinalCTA);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
   const { toast } = useToast();
@@ -134,7 +164,7 @@ export default function AdminWebsiteContent() {
       const { data, error } = await supabase
         .from('system_settings')
         .select('key, value')
-        .in('key', ['website_hero', 'website_stats', 'website_why_choose_us', 'website_emergency', 'website_footer']);
+        .in('key', ['website_hero', 'website_stats', 'website_why_choose_us', 'website_emergency', 'website_footer', 'website_quick_contact', 'website_final_cta']);
 
       if (error) throw error;
 
@@ -146,6 +176,8 @@ export default function AdminWebsiteContent() {
           case 'website_why_choose_us': setWhyChooseUs(prev => ({ ...prev, ...val })); break;
           case 'website_emergency': setEmergency(prev => ({ ...prev, ...val })); break;
           case 'website_footer': setFooter(prev => ({ ...prev, ...val })); break;
+          case 'website_quick_contact': setQuickContact(prev => ({ ...prev, ...val })); break;
+          case 'website_final_cta': setFinalCTA(prev => ({ ...prev, ...val })); break;
         }
       });
     } catch (error) {
@@ -210,6 +242,8 @@ export default function AdminWebsiteContent() {
           <TabsTrigger value="stats"><BarChart3 className="mr-2 h-4 w-4" />Stats</TabsTrigger>
           <TabsTrigger value="why"><Shield className="mr-2 h-4 w-4" />Why Choose Us</TabsTrigger>
           <TabsTrigger value="emergency"><Clock className="mr-2 h-4 w-4" />Emergency</TabsTrigger>
+          <TabsTrigger value="quick-contact"><Phone className="mr-2 h-4 w-4" />Quick Contact</TabsTrigger>
+          <TabsTrigger value="final-cta"><Megaphone className="mr-2 h-4 w-4" />Final CTA</TabsTrigger>
           <TabsTrigger value="footer"><MessageSquare className="mr-2 h-4 w-4" />Footer</TabsTrigger>
         </TabsList>
 
@@ -324,7 +358,50 @@ export default function AdminWebsiteContent() {
           </Card>
         </TabsContent>
 
-        {/* Footer */}
+        {/* Quick Contact Strip */}
+        <TabsContent value="quick-contact" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Contact Strip</CardTitle>
+              <CardDescription>Sticky contact bar that appears when scrolling past the hero</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InputField label="Strip Text" value={quickContact.strip_text} onChange={(v) => setQuickContact({ ...quickContact, strip_text: v })} />
+              <div className="grid grid-cols-2 gap-4">
+                <InputField label="WhatsApp Number (digits only)" value={quickContact.whatsapp_number} onChange={(v) => setQuickContact({ ...quickContact, whatsapp_number: v })} />
+                <InputField label="Phone Number" value={quickContact.phone} onChange={(v) => setQuickContact({ ...quickContact, phone: v })} />
+              </div>
+              <Button onClick={() => saveSection('website_quick_contact', quickContact)} disabled={saving === 'website_quick_contact'}>
+                <Save className="mr-2 h-4 w-4" />{saving === 'website_quick_contact' ? 'Saving...' : 'Save Quick Contact'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Final CTA */}
+        <TabsContent value="final-cta" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Final Call-to-Action</CardTitle>
+              <CardDescription>Bottom banner encouraging visitors to book service</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <InputField label="Headline Line 1" value={finalCTA.headline_line1} onChange={(v) => setFinalCTA({ ...finalCTA, headline_line1: v })} />
+                <InputField label="Headline Line 2" value={finalCTA.headline_line2} onChange={(v) => setFinalCTA({ ...finalCTA, headline_line2: v })} />
+              </div>
+              <InputField label="Description" value={finalCTA.description} onChange={(v) => setFinalCTA({ ...finalCTA, description: v })} multiline />
+              <div className="grid grid-cols-2 gap-4">
+                <InputField label="CTA Button Text" value={finalCTA.cta_primary} onChange={(v) => setFinalCTA({ ...finalCTA, cta_primary: v })} />
+                <InputField label="Phone Display" value={finalCTA.phone_display} onChange={(v) => setFinalCTA({ ...finalCTA, phone_display: v })} />
+              </div>
+              <Button onClick={() => saveSection('website_final_cta', finalCTA)} disabled={saving === 'website_final_cta'}>
+                <Save className="mr-2 h-4 w-4" />{saving === 'website_final_cta' ? 'Saving...' : 'Save Final CTA'}
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="footer" className="space-y-4">
           <Card>
             <CardHeader>

@@ -3,8 +3,12 @@ import { motion } from "framer-motion";
 import { ArrowRight, Phone, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/ui/animated-section";
+import { useWebsiteContent } from "@/hooks/useWebsiteContent";
 
 export function FinalCTASection() {
+  const { finalCTA } = useWebsiteContent();
+  const phoneDigits = finalCTA.phone_display.replace(/\s+/g, '');
+
   return (
     <section className="relative py-24 overflow-hidden">
       {/* Background */}
@@ -34,14 +38,13 @@ export function FinalCTASection() {
           </motion.div>
 
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-            Don't Sweat It.
+            {finalCTA.headline_line1}
             <br />
-            We've Got You Covered.
+            {finalCTA.headline_line2}
           </h2>
 
           <p className="text-xl text-white/90 mb-10 max-w-xl mx-auto">
-            Join thousands of satisfied customers who trust CoolTech for all their cooling needs. 
-            Fast service, fair prices, guaranteed satisfaction.
+            {finalCTA.description}
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
@@ -52,20 +55,20 @@ export function FinalCTASection() {
                 asChild
               >
                 <Link to="/book">
-                  Book Your Service Today
+                  {finalCTA.cta_primary}
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Link>
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-              <a href="tel:+15551234567">
+              <a href={`tel:${phoneDigits}`}>
                 <Button 
                   size="xl" 
                   variant="outline"
                   className="border-2 border-white text-white hover:bg-white/10 text-lg px-10 h-14"
                 >
                   <Phone className="h-5 w-5 mr-2" />
-                  (555) 123-4567
+                  {finalCTA.phone_display}
                 </Button>
               </a>
             </motion.div>
