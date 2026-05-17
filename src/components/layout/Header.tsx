@@ -65,7 +65,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <NavigationMenu className="hidden xl:flex">
+        <NavigationMenu className="hidden lg:flex">
           <NavigationMenuList>
             {navLinks.map((link) => (
               <NavigationMenuItem key={link.href}>
@@ -127,7 +127,7 @@ export function Header() {
         </NavigationMenu>
 
         {/* Desktop CTA */}
-        <div className="hidden xl:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           <Button variant={isScrolled || !isHome ? "ghost" : "glass"} size="sm" asChild>
             <Link to="/admin/login" title="Portal Login">
               <User className="h-4 w-4 mr-1.5" />
@@ -145,7 +145,7 @@ export function Header() {
 
         {/* Mobile Menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild className="xl:hidden">
+          <SheetTrigger asChild className="lg:hidden">
             <Button variant="ghost" size="icon" className={textColor}>
               <Menu className="h-6 w-6" />
             </Button>
