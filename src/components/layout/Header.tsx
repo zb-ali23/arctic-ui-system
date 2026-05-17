@@ -128,9 +128,10 @@ export function Header() {
 
         {/* Desktop CTA */}
         <div className="hidden lg:flex items-center gap-3">
-          <Button variant={isScrolled || !isHome ? "ghost" : "glass"} size="icon" asChild>
+          <Button variant={isScrolled || !isHome ? "ghost" : "glass"} size="sm" asChild>
             <Link to="/admin/login" title="Portal Login">
-              <User className="h-4 w-4" />
+              <User className="h-4 w-4 mr-1.5" />
+              Login
             </Link>
           </Button>
           <Button variant={isScrolled || !isHome ? "outline" : "glass"} size="sm" asChild>
