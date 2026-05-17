@@ -152,18 +152,13 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="right" className="w-full max-w-sm p-0">
             <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center p-4 border-b border-border">
                 <Link to="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                   <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary">
                     <Snowflake className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <span className="font-bold text-xl">CoolTech</span>
                 </Link>
-                <SheetClose asChild>
-                  <Button variant="ghost" size="icon">
-                    <X className="h-5 w-5" />
-                  </Button>
-                </SheetClose>
               </div>
               
               <nav className="flex-1 overflow-auto p-4">
