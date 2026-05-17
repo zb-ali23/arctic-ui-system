@@ -39,14 +39,14 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const headerBg = isScrolled || !isHome
-    ? "bg-white/95 backdrop-blur-md border-b border-border shadow-sm"
+    ? "bg-white backdrop-blur-md border-b border-border shadow-sm"
     : "bg-transparent";
 
   const textColor = isScrolled || !isHome ? "text-foreground" : "text-white";
