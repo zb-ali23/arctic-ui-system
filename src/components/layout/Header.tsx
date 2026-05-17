@@ -127,19 +127,18 @@ export function Header() {
         </NavigationMenu>
 
         {/* Desktop CTA */}
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-2">
           <Button variant={isScrolled || !isHome ? "ghost" : "glass"} size="sm" asChild>
             <Link to="/admin/login" title="Portal Login">
-              <User className="h-4 w-4 mr-1.5" />
-              Login
+              <User className="h-4 w-4" />
             </Link>
           </Button>
           <Button variant={isScrolled || !isHome ? "outline" : "glass"} size="sm" asChild>
-            <Link to="/book">Book Service</Link>
+            <Link to="/book">Book</Link>
           </Button>
           <Button variant="cta" size="sm">
             <Phone className="h-4 w-4" />
-            (555) 123-4567
+            <span className="hidden xl:inline">(555) 123-4567</span>
           </Button>
         </div>
 
