@@ -65,7 +65,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <NavigationMenu className="hidden xl:flex">
+        <NavigationMenu className="hidden lg:flex">
           <NavigationMenuList>
             {navLinks.map((link) => (
               <NavigationMenuItem key={link.href}>
@@ -113,7 +113,7 @@ export function Header() {
                   <Link
                     to={link.href}
                     className={cn(
-                      "px-4 py-2 text-sm font-medium transition-colors hover:opacity-80",
+                      "px-2 py-2 text-sm font-medium transition-colors hover:opacity-80",
                       textColor,
                       location.pathname === link.href && "opacity-100 font-semibold"
                     )}
@@ -127,43 +127,37 @@ export function Header() {
         </NavigationMenu>
 
         {/* Desktop CTA */}
-        <div className="hidden xl:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-2">
           <Button variant={isScrolled || !isHome ? "ghost" : "glass"} size="sm" asChild>
             <Link to="/admin/login" title="Portal Login">
-              <User className="h-4 w-4 mr-1.5" />
-              Login
+              <User className="h-4 w-4" />
             </Link>
           </Button>
           <Button variant={isScrolled || !isHome ? "outline" : "glass"} size="sm" asChild>
-            <Link to="/book">Book Service</Link>
+            <Link to="/book">Book</Link>
           </Button>
           <Button variant="cta" size="sm">
             <Phone className="h-4 w-4" />
-            (555) 123-4567
+            <span className="hidden xl:inline">(555) 123-4567</span>
           </Button>
         </div>
 
         {/* Mobile Menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild className="xl:hidden">
+          <SheetTrigger asChild className="lg:hidden">
             <Button variant="ghost" size="icon" className={textColor}>
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-full max-w-sm p-0">
             <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center p-4 border-b border-border">
                 <Link to="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                   <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary">
                     <Snowflake className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <span className="font-bold text-xl">CoolTech</span>
                 </Link>
-                <SheetClose asChild>
-                  <Button variant="ghost" size="icon">
-                    <X className="h-5 w-5" />
-                  </Button>
-                </SheetClose>
               </div>
               
               <nav className="flex-1 overflow-auto p-4">
