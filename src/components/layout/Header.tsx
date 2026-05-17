@@ -39,14 +39,14 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const headerBg = isScrolled || !isHome
-    ? "bg-white/95 backdrop-blur-md border-b border-border shadow-sm"
+    ? "bg-white backdrop-blur-md border-b border-border shadow-sm"
     : "bg-transparent";
 
   const textColor = isScrolled || !isHome ? "text-foreground" : "text-white";
@@ -65,7 +65,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <NavigationMenu className="hidden lg:flex">
+        <NavigationMenu className="hidden xl:flex">
           <NavigationMenuList>
             {navLinks.map((link) => (
               <NavigationMenuItem key={link.href}>
@@ -127,7 +127,7 @@ export function Header() {
         </NavigationMenu>
 
         {/* Desktop CTA */}
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden xl:flex items-center gap-3">
           <Button variant={isScrolled || !isHome ? "ghost" : "glass"} size="sm" asChild>
             <Link to="/admin/login" title="Portal Login">
               <User className="h-4 w-4 mr-1.5" />
@@ -145,7 +145,7 @@ export function Header() {
 
         {/* Mobile Menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild className="lg:hidden">
+          <SheetTrigger asChild className="xl:hidden">
             <Button variant="ghost" size="icon" className={textColor}>
               <Menu className="h-6 w-6" />
             </Button>
