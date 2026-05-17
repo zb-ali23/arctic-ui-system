@@ -54,7 +54,7 @@ export function HeroSection() {
 
             {/* Headline */}
             <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+              className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight">
               {hero.headline_line1}
               <br />
               <span className="text-frost">{hero.headline_line2}</span>
@@ -62,7 +62,7 @@ export function HeroSection() {
 
             {/* Subtext */}
             <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-              className="text-base sm:text-lg md:text-xl text-white/80 mb-6 sm:mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              className="text-lg sm:text-xl md:text-xl text-white/80 mb-6 sm:mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
               {hero.subtext}
             </motion.p>
 
