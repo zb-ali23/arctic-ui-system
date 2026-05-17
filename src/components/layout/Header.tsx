@@ -113,7 +113,7 @@ export function Header() {
                   <Link
                     to={link.href}
                     className={cn(
-                      "px-4 py-2 text-sm font-medium transition-colors hover:opacity-80",
+                      "px-2 py-2 text-sm font-medium transition-colors hover:opacity-80",
                       textColor,
                       location.pathname === link.href && "opacity-100 font-semibold"
                     )}
