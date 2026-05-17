@@ -189,7 +189,7 @@ export default function AdminBookings() {
 
       const { error } = await supabase
         .from('bookings')
-        .update(updateData)
+        .update(updateData as never)
         .eq('id', selectedBooking.id);
 
       if (error) throw error;

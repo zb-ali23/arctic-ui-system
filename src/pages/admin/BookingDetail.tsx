@@ -199,7 +199,7 @@ export default function BookingDetail() {
 
       const { error } = await supabase
         .from('bookings')
-        .update(updateData)
+        .update(updateData as never)
         .eq('id', booking.id);
 
       if (error) throw error;
